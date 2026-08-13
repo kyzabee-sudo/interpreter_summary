@@ -85,6 +85,17 @@ async def api_summarize(
         "reflection": result.reflection,
         "page_count": result.page_count,
         "locator_count": result.locator_count,
+        "locators_corrected": result.locators_corrected,
+        "locators_dropped": result.locators_dropped,
+        "quotes_kept": result.quotes_kept,
+        "quotes_corrected": result.quotes_corrected,
+        "quotes_dropped": result.quotes_dropped,
+        "journal_page_start": result.journal_page_start,
+        "journal_page_end": result.journal_page_end,
+        "used_printed_pages": result.used_printed_pages,
+        "locator_summary": result.verify_summary_line(),
+        "summary_word_count": result.summary_word_count,
+        "summary_length_note": result.summary_length_note,
         "model": result.model,
     }
 

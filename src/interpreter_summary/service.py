@@ -3,10 +3,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from interpreter_summary.config import Settings
-from interpreter_summary.export import locator_count, parse_sections
+from interpreter_summary.export import parse_sections
 from interpreter_summary.grok import GrokClient
-from interpreter_summary.pdf_utils import pdf_page_count, validate_pdf
+from interpreter_summary.length import count_words, length_hint, summary_length_note
+from interpreter_summary.locators import LocatorReport, verify_locators
+from interpreter_summary.pdf_utils import extract_pdf_corpus, validate_pdf
 from interpreter_summary.prompts import build_user_prompt, default_system_prompt
+from interpreter_summary.quotes import QuoteReport, verify_quotes
 from interpreter_summary.style import load_style_bytes, load_style_text
 
 
@@ -20,7 +23,26 @@ class SummaryResult:
     reflection: str
     page_count: int
     locator_count: int
+    locators_corrected: int
+    locators_dropped: int
+    quotes_kept: int
+    quotes_corrected: int
+    quotes_dropped: int
+    journal_page_start: int | None
+    journal_page_end: int | None
+    used_printed_pages: bool
     model: str
+    locator_report: LocatorReport
+    quote_report: QuoteReport
+    summary_word_count: int
+    summary_length_note: str
+
+    def verify_summary_line(self) -> str:
+        parts = [self.locator_report.summary_line()]
+        if self.quote_report.examined:
+            parts.append(self.quote_report.summary_line())
+        parts.append(self.summary_length_note)
+        return " · ".join(parts)
 
 
 async def summarize_pdf(
@@ -34,7 +56,7 @@ async def summarize_pdf(
     client: GrokClient | None = None,
 ) -> SummaryResult:
     validate_pdf(pdf_bytes, filename, settings.max_upload_bytes)
-    page_count = pdf_page_count(pdf_bytes)
+    corpus = extract_pdf_corpus(pdf_bytes)
     style_text = (
         load_style_bytes(style_bytes, style_filename or "style.docx")
         if style_bytes
@@ -48,7 +70,16 @@ async def summarize_pdf(
         markdown = await grok.summarize_file(
             file_id,
             system_prompt=default_system_prompt(),
-            user_prompt=build_user_prompt(style_text, extra_instructions),
+            user_prompt=build_user_prompt(
+                style_text,
+                extra_instructions,
+                pagination_hint=corpus.pagination_hint(),
+                length_hint_text=length_hint(
+                    corpus.page_count,
+                    printed_start=corpus.journal_start,
+                    printed_end=corpus.journal_end,
+                ),
+            ),
         )
     finally:
         if file_id:
@@ -56,15 +87,30 @@ async def summarize_pdf(
         if owns_client:
             await grok.aclose()
 
-    sections = parse_sections(markdown)
+    locator_report = verify_locators(markdown, corpus)
+    quote_report = verify_quotes(locator_report.markdown, corpus)
+    sections = parse_sections(quote_report.markdown)
+    summary_words = count_words(sections["summary"])
     return SummaryResult(
-        markdown=markdown,
+        markdown=quote_report.markdown,
         title=sections["title"],
         intro=sections["intro"],
         takeaway=sections["takeaway"],
         summary=sections["summary"],
         reflection=sections["reflection"],
-        page_count=page_count,
-        locator_count=locator_count(markdown),
+        page_count=corpus.page_count,
+        locator_count=locator_report.locator_count,
+        locators_corrected=locator_report.corrected,
+        locators_dropped=locator_report.dropped,
+        quotes_kept=quote_report.kept,
+        quotes_corrected=quote_report.corrected,
+        quotes_dropped=quote_report.dropped,
+        journal_page_start=corpus.journal_start,
+        journal_page_end=corpus.journal_end,
+        used_printed_pages=corpus.used_printed_pages,
         model=settings.xai_model,
+        locator_report=locator_report,
+        quote_report=quote_report,
+        summary_word_count=summary_words,
+        summary_length_note=summary_length_note(summary_words, corpus.page_count),
     )

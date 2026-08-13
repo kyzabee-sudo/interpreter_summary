@@ -72,6 +72,10 @@ def _summarize(args: argparse.Namespace) -> None:
     if args.docx:
         args.docx.write_bytes(markdown_to_docx(result.markdown))
         print(f"Wrote {args.docx}")
+    print(
+        f"{result.page_count} PDF pages · {result.verify_summary_line()} · {result.model}",
+        file=sys.stderr,
+    )
 
 
 def _serve(args: argparse.Namespace) -> None:

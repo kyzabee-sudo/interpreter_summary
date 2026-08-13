@@ -8,7 +8,6 @@ from docx.enum.text import WD_LINE_SPACING
 from docx.shared import Pt
 
 HEADING_RE = re.compile(r"^(#{1,3})\s+(.*)$")
-LOCATOR_RE = re.compile(r'\(link to "[^"]+"; page \d+\)')
 
 
 def parse_sections(markdown: str) -> dict[str, str]:
@@ -48,10 +47,6 @@ def parse_sections(markdown: str) -> dict[str, str]:
     for key, lines in buckets.items():
         sections[key] = "\n".join(lines).strip()
     return sections
-
-
-def locator_count(markdown: str) -> int:
-    return len(LOCATOR_RE.findall(markdown))
 
 
 def markdown_to_docx(markdown: str) -> bytes:

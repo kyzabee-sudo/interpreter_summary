@@ -71,7 +71,7 @@ form.addEventListener("submit", async (event) => {
     }
     lastMarkdown = payload.markdown;
     resultHtml.innerHTML = payload.html;
-    resultMeta.textContent = `${payload.page_count} PDF pages · ${payload.locator_count} in-text locators · ${payload.model}`;
+    resultMeta.textContent = `${payload.page_count} PDF pages · ${payload.locator_summary} · ${payload.model}`;
     resultEl.hidden = false;
     setStatus("Draft ready. Edit before publishing.", true);
   } catch (error) {

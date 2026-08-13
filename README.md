@@ -11,10 +11,16 @@ the Word house-style document are ignored.
 
 1. **Title** — `Interpreting Interpreter: [Punchy Title]`
 2. **Boilerplate intro** naming the article, author, and journal volume
-3. **The Takeaway** — one thesis sentence
+3. **The Takeaway** — one or two thesis sentences, including the surprising detail
 4. **The Summary** — an accessible walk through the argument, with locators
-   of the form `(link to "quoted phrase"; page N)`
-5. **The Reflection** — first-person closing thoughts
+   of the form `[label] (link to "opening words"; page N)` using **printed
+   journal pages**. Length scales with PDF page count and then caps (about
+   500–650 words for a ~26-page article). After Grok drafts, locators and
+   block quotes are checked against the PDF text: wrong pages are corrected
+   when the phrase is unique, paraphrased quotes are repaired to the article
+   wording when the passage is clear, and unverifiable locators or quotes are
+   dropped.
+5. **The Reflection** — first-person closing thoughts, usually with an honest reservation
 
 The built-in house style lives in
 `src/interpreter_summary/style_assets/style_guide.md`. A matching Word
