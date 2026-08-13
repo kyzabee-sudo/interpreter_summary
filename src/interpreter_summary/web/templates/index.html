@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Interpreting Interpreter Summarizer</title>
+    <link rel="stylesheet" href="/static/app.css" />
+  </head>
+  <body>
+    <header class="masthead">
+      <p class="eyebrow">The Interpreter Foundation</p>
+      <h1>Interpreting <em>Interpreter</em></h1>
+      <p class="lede">
+        Upload an <em>Interpreter</em> article PDF. Grok drafts a summary in the
+        house style: Takeaway, Summary, Reflection, and in-text page locators.
+        Video scripts are ignored.
+      </p>
+    </header>
+
+    <main>
+      {% if not has_api_key %}
+      <aside class="banner" role="status">
+        Add an <code>XAI_API_KEY</code> to a local <code>.env</code> file
+        (see <code>.env.example</code>) before generating a summary.
+        Get a key at
+        <a href="https://console.x.ai" target="_blank" rel="noreferrer">console.x.ai</a>.
+      </aside>
+      {% endif %}
+
+      <form id="summarize-form" class="panel">
+        <label class="dropzone" id="dropzone">
+          <input id="pdf-input" name="pdf" type="file" accept="application/pdf,.pdf" required />
+          <strong>Drop a PDF here</strong>
+          <span>or click to choose an Interpreter article. Max {{ max_upload_mb }} MB.</span>
+          <em id="pdf-name"></em>
+        </label>
+
+        <details class="advanced">
+          <summary>Optional style override and notes</summary>
+          <p>
+            The built-in style guide already matches Interpreting Interpreter.
+            Attach a Word document only if you want to replace it. Any
+            <strong>Video Script</strong> section is stripped automatically.
+          </p>
+          <label class="file-label">
+            Style document (.docx or .md)
+            <input id="style-input" name="style" type="file" accept=".docx,.md,.txt" />
+          </label>
+          <label class="file-label">
+            Extra instructions
+            <textarea id="notes-input" name="notes" rows="3" placeholder="e.g. keep the Takeaway under 40 words; emphasize the linguistic argument"></textarea>
+          </label>
+        </details>
+
+        <div class="actions">
+          <button type="submit" id="submit-btn" {% if not has_api_key %}disabled{% endif %}>
+            Draft summary
+          </button>
+          <p class="meta">Model: {{ model }}</p>
+        </div>
+        <p id="status" class="status" hidden></p>
+      </form>
+
+      <section id="result" class="result" hidden>
+        <div class="result-toolbar">
+          <p id="result-meta" class="meta"></p>
+          <div class="result-buttons">
+            <button type="button" id="copy-btn">Copy Markdown</button>
+            <button type="button" id="md-btn">Download .md</button>
+            <button type="button" id="docx-btn">Download .docx</button>
+          </div>
+        </div>
+        <article id="result-html" class="article"></article>
+      </section>
+    </main>
+
+    <footer>
+      <p>Interpreting Interpreter summarizer v{{ version }}. Written summaries only.</p>
+    </footer>
+    <script src="/static/app.js"></script>
+  </body>
+</html>

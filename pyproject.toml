@@ -1,0 +1,46 @@
+[project]
+name = "interpreter-summary"
+version = "0.1.0"
+description = "Generate Interpreting Interpreter-style summaries of Interpreter journal PDFs via the Grok API."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "python-multipart>=0.0.12",
+    "httpx>=0.27",
+    "pydantic-settings>=2.6",
+    "python-docx>=1.1",
+    "pypdf>=5.1",
+    "jinja2>=3.1",
+    "markdown>=3.7",
+    "fpdf2>=2.8",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+]
+
+[project.scripts]
+interpreter-summary = "interpreter_summary.cli:main"
+
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+interpreter_summary = [
+    "web/templates/*",
+    "web/static/*",
+    "style_assets/*",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+pythonpath = ["src"]
