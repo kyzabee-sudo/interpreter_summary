@@ -18,6 +18,9 @@ def test_system_prompt_forbids_video_script():
     assert "reservation" in SYSTEM_PROMPT.lower()
     assert "cheerleader" in SYSTEM_PROMPT.lower()
     assert "40–70" in SYSTEM_PROMPT or "40-70" in SYSTEM_PROMPT
+    assert "throat-clearing" in SYSTEM_PROMPT.lower()
+    assert "delve" in SYSTEM_PROMPT.lower()
+    assert "chatbot" in SYSTEM_PROMPT.lower()
 
 
 def test_style_guide_teaches_published_voice():
@@ -31,6 +34,11 @@ def test_style_guide_teaches_published_voice():
     assert "Video Script" not in guide
     assert "500–650" in guide
     assert "41+" in guide
+    assert "Clarity first" in guide
+    assert "sheds light" in guide
+    assert "Banned habits" in guide
+    assert "green cacao" in guide
+    assert "I could only hope to be so lucky" in guide
 
 
 def test_user_prompt_includes_style_and_drops_script_instruction():

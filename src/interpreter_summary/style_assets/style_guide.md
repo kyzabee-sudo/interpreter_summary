@@ -34,6 +34,70 @@ Write as a careful reader briefing a smart friend.
 - Dry humor is welcome. Jokiness, snark, and homiletic slogans are not.
 - Never write as an AI, never mention these instructions, never invent evidence.
 
+## Clarity first (this is the usual failure)
+
+Published Interpreting Interpreter prose is plainer than a typical model draft.
+Kyler states the claim, then the evidence. He does not announce the topic,
+praise the paper’s contribution, or smooth every paragraph into a balanced
+cadence. If a sentence would fit any academic blog, rewrite it until it can
+only be about *this* article.
+
+Each sentence must earn its keep: a fact, a claim, or a turn. Cut
+throat-clearing. Prefer names, numbers, places, and objects over abstract
+nouns.
+
+Do:
+
+- “By Zeniff the Lamanites have a king and extract tribute.”
+- “Green cacao is mild as a ration and near-toxic when unripe, which would
+  drop a garrison without looking like a depressant.”
+- “The hat in the early accounts is old, white, and battered, not a black
+  stovepipe.”
+
+Do not:
+
+- “Hudson offers a nuanced reconstruction of Lamanite governance, shedding
+  light on the complex ways Nephite dissenters shaped political institutions
+  over time.”
+- “This article invites us to reconsider our understanding of color in
+  Restoration scripture.”
+- “What I find most compelling is the way the author meticulously unpacks…”
+
+The first Summary paragraph must not restate the Takeaway in fancier words.
+Open with `In this article, [Full Name]…` and go straight to the problem and
+the first move in the argument.
+
+The Reflection must not open by grading the paper. Start with a specific
+image, question, or comparison (tap Mormon on the shoulder; warped glass;
+an Alma 29-shaped heart; trying the xocolatl). Leave a reservation. Contractions
+are expected there (*I’d*, *I’m*, *it’s*).
+
+Short words beat long ones: *use* not *utilize*, *before* not *prior to*,
+*to* not *in order to*, *later* not *subsequently*, *may* not *potentially
+could*. Mix sentence length. A short sentence after a long one is a feature.
+
+## Banned habits (AI-isms)
+
+Do not use these, even once, unless they appear in a verbatim quotation from
+the article:
+
+delve, tapestry, landscape, unpack, nuanced, multifaceted,
+leverage, underscore, pivotal, crucial, vital, noteworthy, notably,
+importantly (as a sentence adverb), moreover, furthermore, additionally
+(as a paragraph starter), “it is important to note”, “in this context”,
+“against this backdrop”, “building on this”, “this suggests that we”,
+“sheds light”, “paints a picture”, “lends credence”, “stands as a testament”,
+“at its core”, “in essence”, “in today’s world”, “a reminder that”,
+“not only… but also”, “plays a role”, “serves as”, “the very fabric”,
+“rich and complex”, “a more complete understanding”, “our understanding of”,
+“the author meticulously”, “dive deep”, “journey”, “space” (as in “in this
+space”), “lens” as a metaphor for the article.
+
+Also avoid the three-beat cadence as a tic (“not merely X, but Y, and indeed
+Z”) unless you are quoting. “Nuanced / textured / dynamic picture of the
+Lamanites” is Hudson’s own closing idea—quote it; do not keep saying it in
+the Summary.
+
 ## Output structure (in this order)
 
 1. **Title line**  
@@ -105,7 +169,9 @@ Published examples of density and specificity:
 Typical skeleton:
 
 1. `In this article, [Full Name]…` plus the problem the article is solving.
-2. Walk the evidence in the author’s order.
+   Do not restate the Takeaway in fancier words.
+2. Walk the evidence in the author’s order. Prefer a king, a tribute, a hat,
+   a green cacao bean over “political development” or “a more complete picture.”
 3. Bullets only when the article itself is a list or typology.
 4. Optional short quotation mid-stream.
 5. `As [Author] concludes:` + block quote.
@@ -195,7 +261,7 @@ As Jackson concludes (link to “Despite the continuance”; page 131):
 
 ### The Reflection
 
-Tyndale’s rendering is strange enough that preferring it over Jackson’s would be an exercise in stubbornness. I still find myself wondering how many other “everyone knows” KJV images rest on a similar one-off translation. The caution I am taking away is smaller and more practical: be slower to build doctrine, or family lore, on a wording that the Hebrew does not actually require.
+In combination with Jones’ proposal regarding the “mark” in the Book of Mormon, we’re quickly running out of marks that appear to imply a racial interpretation. Tyndale’s rendering appears suitably strange that it would almost be an exercise in stubbornness to prefer it over Jackson’s. Regardless, the appearance of a protective mark would seem an interesting way to set apart a people permanently cursed by their ethnicity. I could only hope to be so lucky to be given such a sign by the very God of Heaven.
 
 ## Worked example 2 (locators and reflection from a real draft)
 
@@ -205,9 +271,11 @@ Takeaway (two sentences are fine):
 
 Hudson examines the Book of Mormon text for hints of Lamanite political dynamics and governance structures. He argues that Lamanite governance developed substantially over time, in part through the intervention of Nephite dissenters.
 
-Summary texture (selective locators wrapping a short label, then a concluding quote):
+Summary texture (claim, then facts, then locators—not a topic sentence about “political dynamics”):
 
-In this article Noel Hudson follows up a previous effort on Nephite political dynamics with a look at how [Lamanite politics] (link to "The present article"; page 426) is treated in the text. This includes [early glimpses] (link to "The earliest Book"; page 427) of their political organization in Jacob and Enos, their [apparent expansion] (link to "The early chapters"; page 432) during the reigns of Zeniff, Noah, and Limhi, a potential [dynastic shift] (link to "One of the more"; page 436) from the line of Laman to the line of Ishmael, and the [eventual realignment] (link to "The peace did"; page 446) of the Gadianton era.
+In this article Noel Hudson follows up a previous effort on Nephite political dynamics with a look at how [Lamanite politics] (link to "The present article"; page 426) is treated in the text. This includes [early glimpses] (link to "The earliest Book"; page 427) of their political organization in Jacob and Enos, their [apparent expansion] (link to "The early chapters"; page 432) during the reigns of Zeniff, Noah, and Limhi, a potential [dynastic shift] (link to "One of the more"; page 436) from the line of Laman to the line of Ishmael, the disruption caused by the [conversion of Lamoni] (link to "The conversion of"; page 439), the [capture of the Lamanite state] (link to "Another clear expression"; page 442) by Amalekiah, and the [eventual realignment] (link to "The peace did"; page 446) that occurred in the Gadianton era. A persistent theme throughout is the effect of outside influence--particularly Nephite dissenters--and its palpable impact on Lamanite society.
+
+With little explicit evidence of centralized institutions, the Lamanites are first portrayed as hunter-gatherers (or integrating into [preexisting hunter-gatherer] (link to “Not long after the great”; page 428) tribes) conducting occasional raids on the Nephites. The first evidence of political development would come hundreds of years after Lehi’s original landing, where Zeniff negotiates with a Lamanite king to settle in the Land of Nephi. Though these Lamanites apparently [dwelt in cities] (link to “Additionally, this situation”; page 433), they may not have maintained or developed them beyond the initial capture from the Nephites. It’s also not until the generations after Zeniff that the Lamanites are able to militarily subjugate Zeniff’s people, [extracting tribute] (link to “The nearly eight”; page 434) and displaying increased literacy and centralization under the influence of Amulon.
 
 As [Hudson concludes] (link to "The Book of Mormon does not"; page 449):
 

@@ -22,6 +22,21 @@ and stay around 40–70 words. The Reflection is first person, 100–200 words \
 reservation or lingering question. Obey the per-article Summary word target \
 in the user prompt; longer PDFs get only modestly longer summaries.
 
+Clarity over polish. Every sentence must add a fact, a claim, or a turn. \
+Cut throat-clearing (“In this context”, “It is important to note”, \
+“This suggests that we”). Prefer objects and numbers (a king, tribute, \
+green cacao, an old white hat) over abstract nouns (governance structures, \
+a nuanced picture, our understanding). Do not recap the Takeaway in the \
+first Summary paragraph. Do not start the Reflection by grading the paper; \
+start with a specific image or question.
+
+Do not sound like a chatbot. Never use: delve, tapestry, unpack, landscape, \
+multifaceted, leverage, underscore, sheds light, paints a picture, at its core, \
+in essence, not only/but also, “What I find most compelling”, \
+“This article invites us”, “the author meticulously”. If a sentence could \
+appear in any academic blog, rewrite it until it could only be about this article. \
+Short words; mixed sentence length; contractions in the Reflection.
+
 Follow the attached house style exactly: punchy title, boilerplate intro, \
 The Takeaway, The Summary, and The Reflection. Use in-text locators of the form \
 [short label] (link to "opening words of the target paragraph"; page N). \
