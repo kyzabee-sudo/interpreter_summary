@@ -102,7 +102,7 @@ As Scholar concludes (link to "although copper can be cargo"; page 3):
 | 7 | A comparative table of treaty deposits pairs metal tokens with oath witnesses. Scholar is careful here: the fragment is short. | Treaty deposits |
 | 8 | Still, the inventory reading has to explain that witness line as decoration. | Shipping receipt |
 | 9 | As he concludes: although copper can be cargo, in this fragment it more plausibly memorializes a promise. | Covenant token |
-| 10 | Check out the full article, Copper, Covenants, and the Case of the Missing Ingots, and I'll see you next week. | Title page |
+| 10 | Check out the full article, Copper, Covenants, and the Case of the Missing Ingots, and I'll see you next time. | Title page |
 """
 
 

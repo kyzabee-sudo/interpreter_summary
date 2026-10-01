@@ -24,7 +24,7 @@ Summary, and a video-script table. There is no Reflection section.
    is unique, paraphrased quotes are repaired to the article wording when the
    passage is clear, and unverifiable locators or quotes are dropped.
 5. **Video Script** — a table of about 10 rows pairing spoken narration with a
-   short image cue, ending `and I'll see you next week.`
+   short image cue, ending `and I'll see you next time.`
 
 The built-in house style lives in
 `src/interpreter_summary/style_assets/style_guide.md`. A matching Word

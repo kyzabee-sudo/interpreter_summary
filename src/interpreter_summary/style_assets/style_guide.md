@@ -217,9 +217,9 @@ Z”) unless you are quoting.
      `Title page`. Middle rows walk two or three vivid details in order, one
      idea per row. The penultimate row may carry a short personal reaction or
      the closing quotation. The last row is the sign-off.
-   - Last row Text, this shape: `Check out the full article, [Article Title], and I'll see you next week.`
+   - Last row Text, this shape: `Check out the full article, [Article Title], and I'll see you next time.`
      “Take a look at the full article…” is also fine. The sentence must end
-     with `and I'll see you next week.` Image cue: `Title page`.
+     with `and I'll see you next time.` Image cue: `Title page`.
 
 ## In-text references
 
@@ -313,7 +313,7 @@ As Scholar concludes (link to "although copper can be cargo"; page 3):
 | 7 | A comparative table of treaty deposits pairs metal tokens with oath witnesses. Scholar is careful here: the fragment is short. | Treaty deposits |
 | 8 | Still, the inventory reading has to explain that witness line as decoration. | Shipping receipt |
 | 9 | As he concludes: although copper can be cargo, in this fragment it more plausibly memorializes a promise. | Covenant token |
-| 10 | Check out the full article, Copper, Covenants, and the Case of the Missing Ingots, and I'll see you next week. | Title page |
+| 10 | Check out the full article, Copper, Covenants, and the Case of the Missing Ingots, and I'll see you next time. | Title page |
 ```
 
 ## Texture from the September 2026 posts
@@ -326,4 +326,4 @@ Summary bullets (Clark): `In this article, David L. Clark summarizes the lives o
 
 Summary bullets (Ahlstrom): one bullet per parallel (“righteous in his youth”, “led people to repentance”, “uniquely great high priest”, and so on), each pairing a Restoration detail with the extra-biblical text that echoes it. Close on what Joseph could not have had in front of him.
 
-Video voice: start on the object (Hagoth’s ships, the scientist-apostle, extra-biblical Melchizedek), name the author within a few rows, spend rows on one or two strange details, and land on `and I'll see you next week.` Image cues stay short: `Title page`, `Alma 63`, `Scopes trial`, `Priestly garments.`
+Video voice: start on the object (Hagoth’s ships, the scientist-apostle, extra-biblical Melchizedek), name the author within a few rows, spend rows on one or two strange details, and land on `and I'll see you next time.` Image cues stay short: `Title page`, `Alma 63`, `Scopes trial`, `Priestly garments.`

@@ -33,7 +33,7 @@ The fragment lists ingots (link to "The warehouse fragment"; page 99).
 | # | Text | Image |
 | --- | --- | --- |
 | 1 | Ten ingots, right after an oath. | Bright copper |
-| 10 | Check out the full article, and I'll see you next week. | Title page |
+| 10 | Check out the full article, and I'll see you next time. | Title page |
 """
 
 
@@ -66,7 +66,7 @@ I like the caution.
 | # | Text | Image |
 | --- | --- | --- |
 | 1 | Ten ingots, right after an oath. | Bright copper |
-| 2 | Check out the full article, and I'll see you next week. | Title page |
+| 2 | Check out the full article, and I'll see you next time. | Title page |
 """
 
 
@@ -111,7 +111,7 @@ async def test_summarize_pdf_with_mocked_grok(tmp_path):
     assert "Fragment W" in result.qa
     assert "In this article" in result.summary
     assert result.video_row_count == 10
-    assert "see you next week" in result.video_script
+    assert "see you next time" in result.video_script
     assert "Reflection" not in result.markdown
     assert "3 questions" in result.qa_length_note
     assert "video 10 rows" in result.video_length_note
@@ -124,7 +124,7 @@ async def test_summarize_pdf_with_mocked_grok(tmp_path):
     assert "The Reflection" not in texts
     assert len(document.tables) == 1
     assert [cell.text for cell in document.tables[0].rows[0].cells] == ["#", "Text", "Image"]
-    assert "see you next week" in document.tables[0].rows[-1].cells[1].text
+    assert "see you next time" in document.tables[0].rows[-1].cells[1].text
 
 
 @pytest.mark.asyncio
@@ -217,7 +217,7 @@ def test_export_html_contains_video_table():
 
     html = md.markdown(SAMPLE_SUMMARY_MARKDOWN, extensions=["extra", "sane_lists", "nl2br"])
     assert "<table" in html
-    assert "see you next week" in html
+    assert "see you next time" in html
     assert "<h2>The Q&amp;A</h2>" in html or "<h2>The Q&A</h2>" in html
 
 

@@ -79,7 +79,7 @@ def length_hint(
         "Do not pad a short narrative just to hit the high target. "
         "Mention an appendix in one sentence if it matters; do not summarize it. "
         "Video script: about 10 rows (9–12). Each narration is one to three spoken sentences. "
-        'The last row ends with "and I\'ll see you next week." '
+        'The last row ends with "and I\'ll see you next time." '
         "Do not write a Reflection."
     )
 

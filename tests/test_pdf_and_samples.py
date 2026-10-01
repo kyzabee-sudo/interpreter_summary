@@ -42,7 +42,7 @@ def test_sample_pdf_and_style_docx(tmp_path: Path):
     assert "The Q&A" in style
     assert "link to" in style
     assert "Video Script" in style
-    assert "see you next week" in style
+    assert "see you next time" in style
     assert "The Reflection" not in style
 
     from docx import Document

@@ -27,7 +27,7 @@ def test_system_prompt_requires_current_format():
     assert "The Summary" in SYSTEM_PROMPT
     assert "Video Script" in SYSTEM_PROMPT
     assert "Do not write a Reflection" in SYSTEM_PROMPT
-    assert "see you next week" in lowered
+    assert "see you next time" in lowered
     assert "exactly three" in lowered
     assert "printed journal page" in lowered
     assert "viewer" in lowered
@@ -49,7 +49,7 @@ def test_style_guide_teaches_current_voice():
     assert "On Abstracting Thought" in guide
     assert "The Q&A" in guide
     assert "Video Script" in guide
-    assert "see you next week" in lowered
+    assert "see you next time" in lowered
     assert "Do not write a Reflection" in guide
     assert "In this article" in guide
     assert "450–900" in guide or "450-900" in guide
@@ -89,7 +89,7 @@ def test_summary_word_targets_match_september_2026_bands():
     assert "650–1200" in hint
     assert "printed 425–450" in hint
     assert "three questions" in hint
-    assert "see you next week" in hint
+    assert "see you next time" in hint
     assert "Do not write a Reflection" in hint
     note = summary_length_note(1700, 26)
     assert "over max" in note
@@ -113,7 +113,7 @@ def test_parse_sections_for_current_format():
     assert sections["takeaway"].startswith("Scholar argues")
     assert "Fragment W" in sections["qa"]
     assert "warehouse fragment" in sections["summary"]
-    assert "see you next week" in sections["video_script"]
+    assert "see you next time" in sections["video_script"]
     assert "reflection" not in sections
     assert locator_count(SAMPLE_SUMMARY_MARKDOWN) == 7
     assert locator_count('[Lamanite politics] (link to “The present article”; page 426)') == 1
@@ -161,7 +161,7 @@ def test_markdown_to_docx_matches_template_shape():
     table = document.tables[0]
     assert [cell.text for cell in table.rows[0].cells] == ["#", "Text", "Image"]
     assert len(table.rows) == 11
-    assert "see you next week" in table.rows[-1].cells[1].text
+    assert "see you next time" in table.rows[-1].cells[1].text
     assert table.rows[-1].cells[2].text == "Title page"
     bullet = next(paragraph for paragraph in document.paragraphs if paragraph.text.startswith("[The verb]"))
     assert any(run.bold and run.text == "[The verb]" for run in bullet.runs)

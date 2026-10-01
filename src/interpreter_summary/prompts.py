@@ -33,7 +33,7 @@ Summary word target in the user prompt. Do not recap the Takeaway in fancier wor
 spoken aloud, contractions welcome, an occasional first person. Image is a \
 short cue for a human editor (a few words, not a caption and not an image \
 prompt). No page locators in the table. The last row’s Text ends with \
-“and I'll see you next week.” Do not put Markdown block quotes inside cells.
+“and I'll see you next time.” Do not put Markdown block quotes inside cells.
 
 Do not write a Reflection section. Do not write the old boilerplate paragraph \
 that begins “This post is a summary of the article”. Do not invent an author-page \
