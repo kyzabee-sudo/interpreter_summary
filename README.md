@@ -95,3 +95,5 @@ tests/
 Replace the generated sample PDF with a real *Interpreter* article when you
 have one locally. Do not commit copyrighted journal PDFs unless you have
 permission to distribute them.
+
+Future work, parked and not implemented: [Instagram reel pipeline plan](docs/reel-pipeline-plan.md).
