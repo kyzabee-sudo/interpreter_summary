@@ -13,7 +13,10 @@ from interpreter_summary.service import summarize_pdf
 
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(
-        description="Generate Interpreting Interpreter-style summaries from Interpreter PDFs."
+        description=(
+            "Draft Interpreting Interpreter posts from Interpreter PDFs: "
+            "Takeaway, Q&A, Summary, and a video script."
+        )
     )
     sub = parser.add_subparsers(dest="command", required=True)
 

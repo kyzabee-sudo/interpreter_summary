@@ -81,8 +81,9 @@ async def api_summarize(
         "html": html,
         "intro": result.intro,
         "takeaway": result.takeaway,
+        "qa": result.qa,
         "summary": result.summary,
-        "reflection": result.reflection,
+        "video_script": result.video_script,
         "page_count": result.page_count,
         "locator_count": result.locator_count,
         "locators_corrected": result.locators_corrected,
@@ -96,6 +97,10 @@ async def api_summarize(
         "locator_summary": result.verify_summary_line(),
         "summary_word_count": result.summary_word_count,
         "summary_length_note": result.summary_length_note,
+        "qa_word_count": result.qa_word_count,
+        "qa_length_note": result.qa_length_note,
+        "video_row_count": result.video_row_count,
+        "video_length_note": result.video_length_note,
         "model": result.model,
     }
 

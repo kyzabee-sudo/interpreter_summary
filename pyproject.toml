@@ -1,6 +1,6 @@
 [project]
 name = "interpreter-summary"
-version = "0.1.0"
+version = "0.2.0"
 description = "Generate Interpreting Interpreter-style summaries of Interpreter journal PDFs via the Grok API."
 readme = "README.md"
 requires-python = ">=3.11"

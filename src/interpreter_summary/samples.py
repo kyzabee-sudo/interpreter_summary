@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from docx import Document
-from docx.shared import Pt
 from fpdf import FPDF
 
 SAMPLE_ARTICLE_TITLE = "Copper, Covenants, and the Case of the Missing Ingots"
@@ -56,65 +54,56 @@ SAMPLE_PDF_PARAGRAPHS = [
     ),
 ]
 
-SAMPLE_STYLE_SECTIONS = [
-    (
-        "Interpreting Interpreter: Tokens, Not Tonnage",
-        "heading",
-    ),
-    (
-        'This post is a summary of the article "Copper, Covenants, and the Case of the Missing Ingots" '
-        "by A. Sample Scholar in Volume 99 of Interpreter: A Journal of Latter-day Saint Faith and "
-        "Scholarship. All of the Interpreting Interpreter articles may be seen at "
-        "https://interpreterfoundation.org/category/summaries/. An introduction to the Interpreting "
-        "Interpreter series is available at "
-        "https://interpreterfoundation.org/interpreting-interpreter-on-abstracting-thought/.",
-        "body",
-    ),
-    ("The Takeaway", "heading"),
-    (
-        "Scholar argues that the 'bright copper' of Fragment W is a covenant token rather than a "
-        "warehouse inventory, because the surrounding clauses use oath, witness, and holiness language "
-        "instead of assay language.",
-        "body",
-    ),
-    ("The Summary", "heading"),
-    (
-        "In this article, A. Sample Scholar revisits a short warehouse fragment that lists ten ingots "
-        'of bright copper after an oath formula (link to "The warehouse fragment"; page 1). Critics '
-        "have read the list as trade goods. Scholar instead walks through three linguistic features -- "
-        "the verb often rendered 'weigh,' the adjective 'bright,' and a closing witness formula -- that "
-        "fit treaty deposits better than shipping receipts (link to \"Three features\"; page 2).",
-        "body",
-    ),
-    (
-        "A comparative table of Late Bronze Age treaty deposits is offered as supporting context, with "
-        "the important caveat that Fragment W is incomplete (link to \"A comparative table\"; page 3). "
-        "Scholar concludes that copper can be cargo, but in this fragment it more plausibly memorializes "
-        'a promise (link to "although copper can be cargo"; page 3).',
-        "body",
-    ),
-    ("The Reflection", "heading"),
-    (
-        "I like how little of the case depends on discovering a new artifact and how much depends on "
-        "reading the words we already have with a different set of expectations. The analogy to treaty "
-        "deposits is the shakiest board in the floor, and Scholar is right to say so. Even so, once you "
-        "have seen the witness formula sitting where a weight total ought to be, it is hard to go back "
-        "to treating the passage as a packing list.",
-        "body",
-    ),
-    ("Video Script", "heading"),
-    (
-        "[This section is included only as a style sample. The summarizer must ignore it.]",
-        "body",
-    ),
-    (
-        "You may have seen last week's video on metal imagery in Restoration scripture. This week we "
-        "look at a tiny warehouse fragment and a surprisingly large claim: those ten ingots of bright "
-        "copper might not be cargo at all. They might be a covenant you can hold in your hand. Check "
-        "the links in the description for the written summary and the full article.",
-        "body",
-    ),
-]
+SAMPLE_SUMMARY_MARKDOWN = """\
+# Interpreting Interpreter: Tokens, Not Tonnage
+
+## The Takeaway
+
+Scholar argues that the bright copper in Fragment W is a covenant token rather than warehouse cargo, because the clauses around it use oath and witness language.
+
+## The Q&A
+
+### What is Fragment W?
+
+Fragment W is a short warehouse list that places ten ingots of bright copper immediately after an oath formula. Critics have read those ingots as ordinary trade goods sitting on a shelf.
+
+### Why does Scholar reject the inventory reading?
+
+Three features of the surrounding clauses point the other way. The verb often rendered "weigh" means "confirm" when the object is a promise, the adjective "bright" clusters with words for holiness, and the list ends with a witness formula that belongs in a covenant text.
+
+### How strong is the comparative evidence?
+
+A table of Late Bronze Age treaty deposits shows metal tokens paired with oath witnesses. Scholar treats the analogy as suggestive rather than decisive, because Fragment W is short and the preceding column is missing.
+
+## The Summary
+
+In this article, A. Sample Scholar revisits Fragment W, which lists ten ingots of bright copper immediately after an oath formula (link to "The warehouse fragment"; page 1). Critics have treated the ingots as a straightforward inventory. Scholar instead walks through three features of the surrounding clauses (link to "Three features"; page 2):
+
+* **[The verb]** (link to "Three features"; page 2). The word translated "weigh" regularly means "confirm" when the object is a promise rather than a commodity.
+* **[The adjective]** (link to "Three features"; page 2). "Bright" clusters with words for holiness, not with words for ore.
+* **[The witness formula]** (link to "Three features"; page 2). The list ends "in the presence of three," which would be odd in a shipping receipt and ordinary in a covenant text.
+
+A comparative table of Late Bronze Age treaty deposits pairs metal tokens with oath witnesses (link to "A comparative table"; page 3). Scholar treats that analogy as suggestive, because the fragment is incomplete and the preceding column is missing.
+
+As Scholar concludes (link to "although copper can be cargo"; page 3):
+
+> although copper can be cargo, in this fragment it more plausibly memorializes a promise.
+
+## Video Script
+
+| # | Text | Image |
+| --- | --- | --- |
+| 1 | Ten ingots of bright copper show up on a warehouse list, right after an oath. | Bright copper ingots |
+| 2 | Most readers would call that cargo. A. Sample Scholar thinks it might be a covenant you can hold in your hand. | Oath formula |
+| 3 | There's an article this week, Copper, Covenants, and the Case of the Missing Ingots, that walks through three clues in the wording. | Title page |
+| 4 | The verb that looks like "weigh" is the same one the corpus uses when someone confirms a promise. | Weigh and confirm |
+| 5 | And the word "bright" keeps company with holiness, not with ore. | Bright and holy |
+| 6 | Then the list closes with a witness formula, the kind you expect in a treaty and not on a packing slip. | Witness formula |
+| 7 | A comparative table of treaty deposits pairs metal tokens with oath witnesses. Scholar is careful here: the fragment is short. | Treaty deposits |
+| 8 | Still, the inventory reading has to explain that witness line as decoration. | Shipping receipt |
+| 9 | As he concludes: although copper can be cargo, in this fragment it more plausibly memorializes a promise. | Covenant token |
+| 10 | Check out the full article, Copper, Covenants, and the Case of the Missing Ingots, and I'll see you next time. | Title page |
+"""
 
 
 class SamplePDF(FPDF):
@@ -149,17 +138,10 @@ def write_sample_pdf(path: Path) -> Path:
 
 
 def write_sample_docx(path: Path) -> Path:
-    document = Document()
-    style = document.styles["Normal"]
-    style.font.name = "Georgia"
-    style.font.size = Pt(11)
-    for text, kind in SAMPLE_STYLE_SECTIONS:
-        if kind == "heading":
-            document.add_heading(text, level=1)
-        else:
-            document.add_paragraph(text)
+    from interpreter_summary.export import markdown_to_docx
+
     path.parent.mkdir(parents=True, exist_ok=True)
-    document.save(str(path))
+    path.write_bytes(markdown_to_docx(SAMPLE_SUMMARY_MARKDOWN))
     return path
 
 

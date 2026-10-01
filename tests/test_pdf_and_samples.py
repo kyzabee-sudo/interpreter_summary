@@ -39,9 +39,17 @@ def test_sample_pdf_and_style_docx(tmp_path: Path):
 
     style = load_style_text(docx_path)
     assert "The Takeaway" in style
+    assert "The Q&A" in style
     assert "link to" in style
-    assert "Video Script" not in style
-    assert "Check the links in the description" not in style
+    assert "Video Script" in style
+    assert "see you next time" in style
+    assert "The Reflection" not in style
+
+    from docx import Document
+
+    document = Document(docx_path)
+    assert len(document.tables) == 1
+    assert [cell.text for cell in document.tables[0].rows[0].cells] == ["#", "Text", "Image"]
 
 
 def test_write_sample_pdf_has_printed_page_markers(tmp_path: Path):

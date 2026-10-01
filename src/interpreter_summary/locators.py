@@ -5,8 +5,10 @@ from dataclasses import dataclass, field
 
 from interpreter_summary.pdf_utils import PdfCorpus
 
+# Optional **bold** around a bracketed label, as in bullet leads:
+# **[Short label]** (link to "opening words"; page N)
 LOCATOR_RE = re.compile(
-    r"(?P<bracket>\[(?P<label>[^\]]+)\]\s*)?"
+    r"(?P<bracket>(?:\*\*)?\[(?P<label>[^\]]+)\](?:\*\*)?\s*)?"
     r'\(link to\s+[“"”](?P<phrase>[^“"”]+)[“"”];\s*page\s+(?P<page>\d+)\)',
     re.IGNORECASE,
 )
@@ -60,11 +62,14 @@ def choose_journal_page(claimed: int, hits: list[int]) -> int | None:
     return None
 
 
-def format_locator(label: str | None, phrase: str, page: int) -> str:
+def format_locator(label: str | None, phrase: str, page: int, *, bold: bool = False) -> str:
     body = f'(link to "{phrase}"; page {page})'
-    if label:
-        return f"[{label}] {body}"
-    return body
+    if not label:
+        return body
+    token = f"[{label}]"
+    if bold:
+        token = f"**{token}**"
+    return f"{token} {body}"
 
 
 def verify_locators(markdown: str, corpus: PdfCorpus) -> LocatorReport:
@@ -81,6 +86,8 @@ def verify_locators(markdown: str, corpus: PdfCorpus) -> LocatorReport:
         phrase = match.group("phrase")
         claimed = int(match.group("page"))
         label = match.group("label")
+        bracket = match.group("bracket") or ""
+        label_is_bold = "**" in bracket
         hits = corpus.pages_containing(phrase)
         chosen = choose_journal_page(claimed, hits)
         start = match.start()
@@ -95,7 +102,7 @@ def verify_locators(markdown: str, corpus: PdfCorpus) -> LocatorReport:
             action = "kept"
             report.kept += 1
         else:
-            replacement = format_locator(label, phrase, chosen)
+            replacement = format_locator(label, phrase, chosen, bold=label_is_bold)
             action = "corrected"
             report.corrected += 1
         pieces.append(markdown[last:start])
