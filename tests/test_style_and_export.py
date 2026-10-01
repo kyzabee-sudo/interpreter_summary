@@ -2,18 +2,27 @@ from io import BytesIO
 
 from docx import Document
 
-from interpreter_summary.export import markdown_to_docx, parse_sections, strip_reflection_section
+from interpreter_summary.export import (
+    markdown_to_docx,
+    parse_sections,
+    strip_preamble,
+    strip_reflection_section,
+)
 from interpreter_summary.length import (
+    closing_quote_length_note,
+    extract_length_note,
     length_hint,
     qa_length_note,
     question_count,
     summary_length_note,
+    summary_prose,
     summary_word_target,
+    takeaway_length_note,
     video_length_note,
     video_row_count,
 )
 from interpreter_summary.locators import locator_count, verify_locators
-from interpreter_summary.pdf_utils import PdfCorpus, PdfPage, normalize_for_match
+from interpreter_summary.pdf_utils import PdfCorpus, PdfPage, normalize_for_match, readable_text
 from interpreter_summary.prompts import SYSTEM_PROMPT, build_user_prompt
 from interpreter_summary.quotes import verify_quotes
 from interpreter_summary.samples import SAMPLE_SUMMARY_MARKDOWN
@@ -34,7 +43,13 @@ def test_system_prompt_requires_current_format():
     assert "verbatim" in lowered
     assert "briefing" in lowered
     assert "cheerleader" in lowered
-    assert "20–55" in SYSTEM_PROMPT or "20-55" in SYSTEM_PROMPT
+    assert "30–45" in SYSTEM_PROMPT or "30-45" in SYSTEM_PROMPT
+    assert "35–70" in SYSTEM_PROMPT or "35-70" in SYSTEM_PROMPT
+    assert "length-note" in SYSTEM_PROMPT
+    assert "scales with article length" in lowered
+    assert "briefly summarizing" in lowered
+    assert "hagoth" in lowered
+    assert "output only the post" in lowered
     assert "throat-clearing" in lowered
     assert "delve" in lowered
     assert "chatbot" in lowered
@@ -52,8 +67,16 @@ def test_style_guide_teaches_current_voice():
     assert "see you next time" in lowered
     assert "Do not write a Reflection" in guide
     assert "In this article" in guide
-    assert "450–900" in guide or "450-900" in guide
-    assert "41+" in guide
+    assert "200–330" in guide or "200-330" in guide
+    assert "450–750" in guide or "450-750" in guide
+    assert "30–45" in guide or "30-45" in guide
+    assert "35–70" in guide or "35-70" in guide
+    assert "60–110" in guide or "60-110" in guide
+    assert "length-note" in lowered
+    assert "bowen" in lowered
+    assert "briefly summarizing" in lowered
+    assert "hagoth is one of the coolest" in lowered
+    assert "no preamble" in lowered
     assert "Clarity first" in guide
     assert "sheds light" in guide
     assert "Banned habits" in guide
@@ -79,23 +102,82 @@ def test_user_prompt_includes_style_and_asks_for_video_script():
     assert "The Summary: about 450–900 words." in prompt
 
 
-def test_summary_word_targets_match_september_2026_bands():
-    assert summary_word_target(8) == (300, 500, 650)
-    assert summary_word_target(20) == (450, 900, 1400)
-    assert summary_word_target(26) == (650, 1200, 1600)
-    assert summary_word_target(82) == (800, 1400, 1800)
-    hint = length_hint(26, printed_start=425, printed_end=450)
+def _qa(answers: list[int], *, extra_question: bool = False) -> str:
+    parts = []
+    for index, words in enumerate(answers, start=1):
+        parts.append(f"### Question {index}?\n\n" + " ".join(["word"] * words))
+    if extra_question:
+        parts.append("### And a fourth?\n\n" + " ".join(["word"] * 40))
+    return "\n\n".join(parts)
+
+
+def test_summary_word_targets_scale_with_pages_and_tighten_on_body_words():
+    assert summary_word_target(8) == (200, 330, 400)
+    assert summary_word_target(12) == (200, 330, 400)
+    assert summary_word_target(16) == (330, 500, 650)
+    assert summary_word_target(24) == (330, 500, 650)
+    assert summary_word_target(26) == (380, 620, 800)
+    assert summary_word_target(40) == (380, 620, 800)
+    assert summary_word_target(42) == (450, 750, 950)
+    assert summary_word_target(82) == (450, 750, 950)
+    # Figure-heavy or note-heavy: body words select the shorter band.
+    assert summary_word_target(60, 9236) == (380, 620, 800)
+    assert summary_word_target(48, 7538) == (330, 500, 650)
+    # Squire 70_04: 16 pages and ~5.8k body words stay on the page band.
+    assert summary_word_target(16, 5780) == (330, 500, 650)
+    # A denser text does not raise the page band.
+    assert summary_word_target(24, 8488) == (330, 500, 650)
+    # A thin extract is ignored.
+    assert summary_word_target(30, 80) == (380, 620, 800)
+    hint = length_hint(26, printed_start=425, printed_end=450, body_words=9000)
     assert "26 PDF pages" in hint
-    assert "650–1200" in hint
+    assert "380–620" in hint
+    assert "30–45" in hint
+    assert "35–70" in hint
+    assert "60–110" in hint
     assert "printed 425–450" in hint
     assert "three questions" in hint
+    assert "length-note" in hint
+    assert "Squire" in hint
     assert "see you next time" in hint
+    assert "no preamble" in hint
     assert "Do not write a Reflection" in hint
-    note = summary_length_note(1700, 26)
+    note = summary_length_note(849, 16)
     assert "over max" in note
-    assert summary_length_note(800, 26).startswith("summary 800 words (on target")
-    assert "3 questions" in qa_length_note(200, 3)
-    assert "expected 3" in qa_length_note(200, 4)
+    assert "no reason given" in note
+    assert "before the closing quote" in note
+    assert "13–24 pages" in note
+    on_target = summary_length_note(450, 16)
+    assert "on target" in on_target
+    assert "before the closing quote" in on_target
+    assert "long" in summary_length_note(600, 16)
+    assert "short" in summary_length_note(328, 16)
+    justified = summary_length_note(
+        328,
+        16,
+        justification="literary-structure study of one chapter, like Squire on Alma 63",
+    )
+    assert "heads-up" in justified
+    assert "over max" not in justified
+    assert "literary-structure" in justified
+    assert "heads-up" in summary_length_note(
+        1101,
+        24,
+        justification="nine parallel points, about 100 words each",
+    )
+    assert "on target" in qa_length_note(_qa([40, 55, 48]))
+    assert "short" in qa_length_note(_qa([40, 20, 48]))
+    assert "long" in qa_length_note(_qa([40, 80, 48]))
+    assert "over max" in qa_length_note(_qa([40, 95, 48]))
+    assert "3 questions" in qa_length_note(_qa([40, 55, 48]))
+    assert "expected 3" in qa_length_note(_qa([40, 55, 48], extra_question=True))
+    assert "on target" in takeaway_length_note(38)
+    assert "long" in takeaway_length_note(50)
+    assert "over max" in takeaway_length_note(60)
+    assert "short" in takeaway_length_note(22)
+    assert "on target" in closing_quote_length_note(90)
+    assert "short" in closing_quote_length_note(40)
+    assert "over max" in closing_quote_length_note(140)
     assert "on target" in video_length_note(10)
     assert "short" in video_length_note(4)
 
@@ -118,6 +200,71 @@ def test_parse_sections_for_current_format():
     assert locator_count(SAMPLE_SUMMARY_MARKDOWN) == 7
     assert locator_count('[Lamanite politics] (link to “The present article”; page 426)') == 1
     assert locator_count('**[The verb]** (link to "Three features"; page 2)') == 1
+
+
+def test_summary_prose_drops_closing_quote_before_the_word_count():
+    summary = """
+In this article, Derek J. Squire continues to mine Alma.
+
+As Squire concludes (link to "Why does any"; page 83):
+
+> Alma 63 could easily have been written without all the bells and whistles.
+"""
+    prose = summary_prose(summary)
+    assert "mine Alma" in prose
+    assert "bells and whistles" not in prose
+    assert "As Squire concludes" in prose
+
+
+def test_extract_length_note_leaves_the_post_and_keeps_the_reason():
+    raw = (
+        "# Interpreting Interpreter: Alma 63\n\n"
+        "## The Takeaway\n\n"
+        "Squire outlines a chiasm.\n\n"
+        "<!-- length-note: below the band because this is a literary-structure study of one chapter -->\n"
+    )
+    cleaned, reason = extract_length_note(raw)
+    assert "length-note" not in cleaned
+    assert cleaned.startswith("# Interpreting Interpreter: Alma 63")
+    assert reason is not None
+    assert "literary-structure" in reason
+    headed = raw + "\n## Length note\n\nAbove the band because of nine parallels.\n"
+    cleaned, reason = extract_length_note(headed)
+    assert "## Length note" not in cleaned
+    assert "nine parallels" in (reason or "")
+
+
+def test_readable_text_rejoins_line_break_hyphenation():
+    assert readable_text("writ -\nten") == "written"
+    assert readable_text("writ-\nten") == "written"
+    assert readable_text("sophisti -\ncated") == "sophisticated"
+    assert readable_text("thirty-seventh") == "thirty-seventh"
+    assert readable_text("“written”") == '"written"'
+    assert readable_text("hand —the") == "hand-the"
+    assert readable_text("hand — the") == "hand-the"
+    assert normalize_for_match("Hand — The") == normalize_for_match("hand-the")
+
+
+def test_strip_preamble_cuts_chatter_glued_to_the_title():
+    raw = (
+        "I'll pull exact paragraph openings, printed pages, and the closing quotation."
+        "# Interpreting Interpreter: Alma 63\n\n"
+        "## The Takeaway\n\n"
+        "Squire outlines a chiasm in Alma 63.\n"
+    )
+    cleaned = strip_preamble(raw)
+    assert cleaned.startswith("# Interpreting Interpreter: Alma 63")
+    assert "I'll pull" not in cleaned
+    sections = parse_sections(cleaned)
+    assert sections["title"] == "Interpreting Interpreter: Alma 63"
+    document = Document(BytesIO(markdown_to_docx(cleaned)))
+    assert "I'll pull" not in document.paragraphs[0].text
+    assert document.paragraphs[0].text.startswith("Interpreting Interpreter: Alma 63")
+
+    lined = "I'll pull exact paragraph openings.\n\n# Interpreting Interpreter: Alma 63\n"
+    assert strip_preamble(lined).startswith("# Interpreting Interpreter: Alma 63")
+    numbered = "Look at page # 1 first.# Interpreting Interpreter: Alma 63\n\n## The Takeaway\n\nSquire outlines it.\n"
+    assert strip_preamble(numbered).startswith("# Interpreting Interpreter: Alma 63")
 
 
 def test_strip_reflection_section_drops_retired_block():
@@ -209,6 +356,23 @@ As he concludes (link to “The Book of Mormon does not”; page 449):
     assert "No such paragraph exists here" not in report.markdown
     assert "A fake claim appears." in report.markdown
     assert locator_count(report.markdown) == 3
+
+
+def test_verify_locators_corrects_a_label_woven_into_the_sentence():
+    corpus = _corpus_from_pages(
+        {
+            70: "Helaman, a son of Alma, takes the records at the close of the war.",
+        }
+    )
+    markdown = (
+        'After [briefly summarizing] (link to "Helaman, a son"; page 99) '
+        "the chapter, he outlines the chiasm."
+    )
+    report = verify_locators(markdown, corpus)
+    assert report.corrected == 1
+    assert report.dropped == 0
+    assert 'After [briefly summarizing] (link to "Helaman, a son"; page 70) the chapter' in report.markdown
+    assert "page 99" not in report.markdown
 
 
 def test_verify_locators_keeps_bold_labels_and_corrects_their_pages():
@@ -311,6 +475,52 @@ As Scholar concludes:
     assert "obviously" not in report.markdown
     assert "more plausibly memorializes a promise" in report.markdown
     assert report.markdown.strip().startswith("> ") or "> although copper can be cargo" in report.markdown
+
+
+def test_verify_quotes_keeps_a_hyphenated_closing_quote():
+    """The Squire PDF splits words across line breaks ('writ -\\nten') and a page header."""
+    corpus = _corpus_from_pages(
+        {
+            83: (
+                "Why does any of this matter? Alma 63 could easily have been "
+                "writ -\n"
+                "ten without all the bells and whistles of literary devices and "
+                "sophisti -\n"
+                "cated structural techniques. However, the incredible attention "
+                "given to"
+            ),
+            84: (
+                "84 • Interpreter 70 (2027)\n"
+                "form and style, structure and content, is consistent with what is found "
+                "throughout the book of Alma. A middle sentence that the quote will skip. "
+                "Mormon appears to give particular care to crafting conclusions. "
+                "Even mundane details are shared to match the project at hand —the writing of "
+                "scrip -\n"
+                "ture."
+            ),
+        }
+    )
+    markdown = """
+As Squire concludes (link to "Why does any"; page 83):
+
+> Why does any of this matter? Alma 63 could easily have been written without all the bells and whistles of literary devices and sophisticated structural techniques. However, the incredible attention given to form and style, structure and content, is consistent with what is found throughout the book of Alma. .... Mormon appears to give particular care to crafting conclusions. Even mundane details are shared to match the project at hand—the writing of scripture.
+"""
+    report = verify_quotes(markdown, corpus)
+    assert report.kept == 1
+    assert report.dropped == 0
+    assert "As Squire concludes" in report.markdown
+    assert "written without" in report.markdown
+    assert "sophisticated" in report.markdown
+
+    bad = """
+As Squire concludes:
+
+> Alma 63 could easily have been written by a later editor who invented the chiasm.
+"""
+    dropped = verify_quotes(bad, corpus)
+    assert dropped.dropped == 1
+    assert "later editor" not in dropped.markdown
+    assert "As Squire concludes" not in dropped.markdown
 
 
 def test_verify_quotes_drops_unverified_quote_and_attribution():

@@ -10,6 +10,11 @@ from docx.oxml.ns import qn
 from docx.shared import Inches, Pt, Twips
 
 HEADING_RE = re.compile(r"^(#{1,3})\s+(.*)$")
+HEADING_AT_LINE_START_RE = re.compile(r"(?m)^#{1,3}[ \t]+\S")
+HEADING_ANYWHERE_RE = re.compile(r"#{1,3}[ \t]+\S")
+# The series title is the start of the post even when chatter is glued to it
+# on the same line. A later "## The Takeaway" must not win that race.
+TITLE_HEADING_RE = re.compile(r"# Interpreting Interpreter\b", re.IGNORECASE)
 REFLECTION_RE = re.compile(r"^#{1,3}\s+(?:the\s+)?reflection\s*:?\s*$", re.IGNORECASE)
 RESUME_HEADING_RE = re.compile(r"^#{1,2}\s+\S")
 SEPARATOR_CELL_RE = re.compile(r":?-{3,}:?")
@@ -66,6 +71,26 @@ def parse_sections(markdown: str) -> dict[str, str]:
     for key, lines in buckets.items():
         sections[key] = "\n".join(lines).strip()
     return sections
+
+
+def strip_preamble(markdown: str) -> str:
+    """Drop model chatter before the post, including chatter glued to the title line.
+
+    The series title wins even when it shares a line with the chatter, and even
+    when that line also contains a false heading such as "page # 1". A later
+    "## The Takeaway" must not be treated as the start of the post.
+    """
+    text = markdown.replace("\r\n", "\n").lstrip("\ufeff")
+    title = TITLE_HEADING_RE.search(text)
+    if title is not None:
+        start = title.start()
+    else:
+        match = HEADING_AT_LINE_START_RE.search(text) or HEADING_ANYWHERE_RE.search(text)
+        start = match.start() if match else 0
+    if start > 0:
+        text = text[start:]
+    stripped = text.strip()
+    return f"{stripped}\n" if stripped else ""
 
 
 def strip_reflection_section(markdown: str) -> str:

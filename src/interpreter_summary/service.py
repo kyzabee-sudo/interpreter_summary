@@ -3,14 +3,18 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from interpreter_summary.config import Settings
-from interpreter_summary.export import parse_sections, strip_reflection_section
+from interpreter_summary.export import parse_sections, strip_preamble, strip_reflection_section
 from interpreter_summary.grok import GrokClient
 from interpreter_summary.length import (
+    closing_quote_length_note,
+    closing_quote_text,
     count_words,
+    extract_length_note,
     length_hint,
     qa_length_note,
-    question_count,
     summary_length_note,
+    summary_prose,
+    takeaway_length_note,
     video_length_note,
     video_row_count,
 )
@@ -45,6 +49,10 @@ class SummaryResult:
     quote_report: QuoteReport
     summary_word_count: int
     summary_length_note: str
+    closing_quote_word_count: int
+    closing_quote_length_note: str
+    takeaway_word_count: int
+    takeaway_length_note: str
     qa_word_count: int
     qa_length_note: str
     video_row_count: int
@@ -54,7 +62,15 @@ class SummaryResult:
         parts = [self.locator_report.summary_line()]
         if self.quote_report.examined:
             parts.append(self.quote_report.summary_line())
-        parts.extend([self.summary_length_note, self.qa_length_note, self.video_length_note])
+        parts.extend(
+            [
+                self.takeaway_length_note,
+                self.summary_length_note,
+                self.closing_quote_length_note,
+                self.qa_length_note,
+                self.video_length_note,
+            ]
+        )
         return " · ".join(parts)
 
 
@@ -80,6 +96,8 @@ async def summarize_pdf(
     file_id = None
     try:
         file_id = await grok.upload_pdf(pdf_bytes, filename)
+        # Stream so a long reasoning run is not cut off by a silent read timeout.
+        # The PDF stays attached; xAI turns that into document search automatically.
         markdown = await grok.summarize_file(
             file_id,
             system_prompt=default_system_prompt(),
@@ -91,6 +109,7 @@ async def summarize_pdf(
                     corpus.page_count,
                     printed_start=corpus.journal_start,
                     printed_end=corpus.journal_end,
+                    body_words=corpus.body_words,
                 ),
             ),
         )
@@ -100,14 +119,18 @@ async def summarize_pdf(
         if owns_client:
             await grok.aclose()
 
-    drafted = strip_reflection_section(markdown)
+    # Pull the length explanation before preamble stripping, in case the model
+    # parks the comment above the title. It must not remain in the post.
+    markdown, length_justification = extract_length_note(markdown)
+    drafted = strip_preamble(strip_reflection_section(markdown))
     locator_report = verify_locators(drafted, corpus)
     quote_report = verify_quotes(locator_report.markdown, corpus)
     cleaned = quote_report.markdown
     sections = parse_sections(cleaned)
-    summary_words = count_words(sections["summary"])
+    summary_words = count_words(summary_prose(sections["summary"]))
+    quote_words = count_words(closing_quote_text(sections["summary"]))
+    takeaway_words = count_words(sections["takeaway"])
     qa_words = count_words(sections["qa"])
-    questions = question_count(sections["qa"])
     rows = video_row_count(sections["video_script"])
     return SummaryResult(
         markdown=cleaned,
@@ -131,9 +154,18 @@ async def summarize_pdf(
         locator_report=locator_report,
         quote_report=quote_report,
         summary_word_count=summary_words,
-        summary_length_note=summary_length_note(summary_words, corpus.page_count),
+        summary_length_note=summary_length_note(
+            summary_words,
+            corpus.page_count,
+            body_words=corpus.body_words,
+            justification=length_justification,
+        ),
+        closing_quote_word_count=quote_words,
+        closing_quote_length_note=closing_quote_length_note(quote_words),
+        takeaway_word_count=takeaway_words,
+        takeaway_length_note=takeaway_length_note(takeaway_words),
         qa_word_count=qa_words,
-        qa_length_note=qa_length_note(qa_words, questions),
+        qa_length_note=qa_length_note(sections["qa"]),
         video_row_count=rows,
         video_length_note=video_length_note(rows),
     )

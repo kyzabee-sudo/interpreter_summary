@@ -12,7 +12,9 @@ class Settings(BaseSettings):
     xai_model: str = "grok-4.6"
     xai_base_url: str = "https://api.x.ai"
     max_upload_mb: int = 40
-    request_timeout_seconds: float = 600.0
+    # Time between streamed chunks. Long reasoning models can sit quiet, then
+    # emit tokens; streaming keeps this from being one 600s wait for the body.
+    request_timeout_seconds: float = 1200.0
     file_ttl_seconds: int = 3600
     host: str = "127.0.0.1"
     port: int = 8000

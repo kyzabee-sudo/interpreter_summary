@@ -1,8 +1,10 @@
+import json
+from io import BytesIO
+
 import httpx
 import pytest
 from docx import Document
 from fastapi.testclient import TestClient
-from io import BytesIO
 
 from interpreter_summary.config import Settings
 from interpreter_summary.export import markdown_to_docx
@@ -70,11 +72,18 @@ I like the caution.
 """
 
 
-def _handler(markdown: str):
+def _handler(markdown: str, seen: list | None = None):
     def respond(request: httpx.Request) -> httpx.Response:
         if request.method == "POST" and request.url.path == "/v1/files":
             return httpx.Response(200, json={"id": "file-123", "filename": "article.pdf"})
         if request.method == "POST" and request.url.path == "/v1/responses":
+            payload = json.loads(request.content.decode() or "{}")
+            if seen is not None:
+                seen.append(payload)
+            if payload.get("stream"):
+                event = json.dumps({"type": "response.output_text.delta", "delta": markdown})
+                body = f"data: {event}\n\ndata: [DONE]\n\n"
+                return httpx.Response(200, text=body)
             return httpx.Response(200, json={"output_text": markdown})
         if request.method == "DELETE" and request.url.path.startswith("/v1/files/"):
             return httpx.Response(200, json={"deleted": True})
@@ -83,11 +92,23 @@ def _handler(markdown: str):
     return respond
 
 
+def _file_attachment(payload: dict) -> dict | None:
+    for item in payload.get("input") or []:
+        content = item.get("content")
+        if not isinstance(content, list):
+            continue
+        for part in content:
+            if isinstance(part, dict) and part.get("type") == "input_file":
+                return part
+    return None
+
+
 @pytest.mark.asyncio
 async def test_summarize_pdf_with_mocked_grok(tmp_path):
     pdf_path = write_sample_pdf(tmp_path / "article.pdf")
     settings = Settings(xai_api_key="test-key", xai_model="grok-4.6")
-    transport = httpx.MockTransport(_handler(SAMPLE_SUMMARY_MARKDOWN))
+    seen: list[dict] = []
+    transport = httpx.MockTransport(_handler(SAMPLE_SUMMARY_MARKDOWN, seen))
     async with httpx.AsyncClient(transport=transport, base_url="https://api.x.ai") as raw:
         client = GrokClient(settings, client=raw)
         result = await summarize_pdf(
@@ -125,6 +146,60 @@ async def test_summarize_pdf_with_mocked_grok(tmp_path):
     assert len(document.tables) == 1
     assert [cell.text for cell in document.tables[0].rows[0].cells] == ["#", "Text", "Image"]
     assert "see you next time" in document.tables[0].rows[-1].cells[1].text
+    assert seen and seen[0]["stream"] is True
+    attachment = _file_attachment(seen[0])
+    assert attachment is not None
+    assert attachment["file_id"] == "file-123"
+    assert "tool_choice" not in seen[0]
+
+
+@pytest.mark.asyncio
+async def test_summarize_pdf_strips_preamble_glued_to_the_title(tmp_path):
+    pdf_path = write_sample_pdf(tmp_path / "article.pdf")
+    settings = Settings(xai_api_key="test-key", xai_model="grok-4.6")
+    chatter = (
+        "I'll pull exact paragraph openings, printed pages, and the closing quotation."
+    )
+    transport = httpx.MockTransport(_handler(chatter + SAMPLE_SUMMARY_MARKDOWN))
+    async with httpx.AsyncClient(transport=transport, base_url="https://api.x.ai") as raw:
+        client = GrokClient(settings, client=raw)
+        result = await summarize_pdf(
+            pdf_path.read_bytes(),
+            "article.pdf",
+            settings,
+            client=client,
+        )
+    assert result.title == "Interpreting Interpreter: Tokens, Not Tonnage"
+    assert "I'll pull" not in result.markdown
+    assert result.quotes_kept == 1
+    document = Document(BytesIO(markdown_to_docx(result.markdown)))
+    assert "I'll pull" not in document.paragraphs[0].text
+    assert document.paragraphs[0].text.startswith("Interpreting Interpreter: Tokens, Not Tonnage")
+
+
+@pytest.mark.asyncio
+async def test_summarize_pdf_surfaces_a_length_note_outside_the_post(tmp_path):
+    pdf_path = write_sample_pdf(tmp_path / "article.pdf")
+    settings = Settings(xai_api_key="test-key", xai_model="grok-4.6")
+    note = (
+        "<!-- length-note: below the band because this is a close reading of one fragment -->\n"
+    )
+    transport = httpx.MockTransport(_handler(SAMPLE_SUMMARY_MARKDOWN + note))
+    async with httpx.AsyncClient(transport=transport, base_url="https://api.x.ai") as raw:
+        client = GrokClient(settings, client=raw)
+        result = await summarize_pdf(
+            pdf_path.read_bytes(),
+            "article.pdf",
+            settings,
+            client=client,
+        )
+    assert "length-note" not in result.markdown
+    assert "close reading" not in result.markdown
+    assert "close reading" in result.summary_length_note
+    document = Document(BytesIO(markdown_to_docx(result.markdown)))
+    assert all("close reading" not in paragraph.text for paragraph in document.paragraphs)
+    assert "closing quote" in result.closing_quote_length_note
+    assert "30–45" in result.takeaway_length_note or "30-45" in result.takeaway_length_note
 
 
 @pytest.mark.asyncio
@@ -223,3 +298,28 @@ def test_export_html_contains_video_table():
 
 def test_extract_handles_output_text_field():
     assert extract_output_text({"output_text": "plain"}) == "plain"
+
+
+@pytest.mark.asyncio
+async def test_summarize_file_uses_completed_event_when_no_deltas_arrive():
+    markdown = "# Interpreting Interpreter: Quiet Model\n\n## The Takeaway\n\nDone.\n"
+
+    def respond(request: httpx.Request) -> httpx.Response:
+        if request.url.path != "/v1/responses":
+            return httpx.Response(404)
+        event = json.dumps(
+            {"type": "response.completed", "response": {"output_text": markdown}}
+        )
+        return httpx.Response(200, text=f"data: {event}\n\ndata: [DONE]\n\n")
+
+    settings = Settings(xai_api_key="test-key", request_timeout_seconds=1200)
+    transport = httpx.MockTransport(respond)
+    async with httpx.AsyncClient(transport=transport, base_url="https://api.x.ai") as raw:
+        client = GrokClient(settings, client=raw)
+        text = await client.summarize_file(
+            "file-123",
+            system_prompt="system",
+            user_prompt="user",
+        )
+    assert text.startswith("# Interpreting Interpreter: Quiet Model")
+    assert settings.request_timeout_seconds == 1200

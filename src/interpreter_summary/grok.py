@@ -24,7 +24,14 @@ class GrokClient:
         self._client = client or httpx.AsyncClient(
             base_url=settings.xai_base_url.rstrip("/"),
             headers={"Authorization": f"Bearer {settings.xai_api_key}"},
-            timeout=httpx.Timeout(settings.request_timeout_seconds),
+            # read applies between chunks. Streaming resets it as tokens arrive,
+            # so a long reasoning model is not cut off by one silent 600s wait.
+            timeout=httpx.Timeout(
+                connect=30.0,
+                read=settings.request_timeout_seconds,
+                write=60.0,
+                pool=30.0,
+            ),
         )
 
     async def aclose(self) -> None:
@@ -58,22 +65,28 @@ class GrokClient:
         system_prompt: str,
         user_prompt: str,
     ) -> str:
-        response = await self._client.post(
-            "/v1/responses",
-            json=_responses_payload(
-                model=self.settings.xai_model,
-                system_prompt=system_prompt,
-                user_prompt=user_prompt,
-                file_id=file_id,
-                stream=False,
-            ),
-            headers={"Content-Type": "application/json"},
-        )
-        payload = _json_or_error(response, "summarize")
-        text = extract_output_text(payload)
-        if not text.strip():
+        """Collect a streamed response so long reasoning runs keep the connection alive.
+
+        The PDF stays an attached file. xAI turns that attachment into document
+        search on its own; there is no documented switch to turn those searches
+        off without dropping the file.
+        """
+        deltas: list[str] = []
+        fallback = ""
+        async for event in self._iter_response_events(
+            file_id,
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+        ):
+            kind, text = _interpret_stream_event(event)
+            if kind == "delta" and text:
+                deltas.append(text)
+            elif kind == "full" and text:
+                fallback = text
+        text = "".join(deltas).strip() or fallback.strip()
+        if not text:
             raise GrokError("Grok returned an empty summary.")
-        return text.strip() + "\n"
+        return text if text.endswith("\n") else text + "\n"
 
     async def summarize_file_stream(
         self,
@@ -82,6 +95,22 @@ class GrokClient:
         system_prompt: str,
         user_prompt: str,
     ) -> AsyncIterator[str]:
+        async for event in self._iter_response_events(
+            file_id,
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+        ):
+            kind, text = _interpret_stream_event(event)
+            if kind == "delta" and text:
+                yield text
+
+    async def _iter_response_events(
+        self,
+        file_id: str,
+        *,
+        system_prompt: str,
+        user_prompt: str,
+    ) -> AsyncIterator[dict[str, Any]]:
         async with self._client.stream(
             "POST",
             "/v1/responses",
@@ -107,9 +136,8 @@ class GrokClient:
                     event = json.loads(data)
                 except json.JSONDecodeError:
                     continue
-                delta = _stream_delta(event)
-                if delta:
-                    yield delta
+                if isinstance(event, dict):
+                    yield event
 
 
 def _responses_payload(
@@ -160,21 +188,32 @@ def extract_output_text(payload: dict[str, Any]) -> str:
     return ""
 
 
-def _stream_delta(event: dict[str, Any]) -> str:
+def _interpret_stream_event(event: dict[str, Any]) -> tuple[str, str]:
+    """Return ("delta", text), ("full", text), or ("", "")."""
     event_type = event.get("type") or ""
     if event_type in {"response.output_text.delta", "response.output_text.delta.added"}:
         delta = event.get("delta")
-        if isinstance(delta, str):
-            return delta
-    if event_type == "response.output_text.delta" and isinstance(event.get("text"), str):
-        return event["text"]
+        if isinstance(delta, str) and delta:
+            return "delta", delta
+        if isinstance(event.get("text"), str) and event["text"]:
+            return "delta", event["text"]
+    if event_type in {"response.completed", "response.done"}:
+        response = event.get("response") if isinstance(event.get("response"), dict) else event
+        full = extract_output_text(response)
+        if full.strip():
+            return "full", full
     choices = event.get("choices") or []
     if choices:
         delta = choices[0].get("delta") or {}
         content = delta.get("content")
-        if isinstance(content, str):
-            return content
-    return ""
+        if isinstance(content, str) and content:
+            return "delta", content
+    return "", ""
+
+
+def _stream_delta(event: dict[str, Any]) -> str:
+    kind, text = _interpret_stream_event(event)
+    return text if kind == "delta" else ""
 
 
 def _json_or_error(response: httpx.Response, action: str) -> dict[str, Any]:

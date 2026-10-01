@@ -6,7 +6,9 @@ from difflib import SequenceMatcher
 
 from interpreter_summary.pdf_utils import PdfCorpus, readable_text
 
-ELLIPSIS_RE = re.compile(r"\s*(?:\.{3}|…)\s*")
+# Three or more dots: PDF drafts sometimes type "...." and a leftover dot
+# would otherwise stick to the next segment and fail the match.
+ELLIPSIS_RE = re.compile(r"\s*(?:\.{3,}|…)\s*")
 ATTRIBUTION_RE = re.compile(
     r"(?i)\b(concludes?|writes?|argues?|notes?|states?|observes?|explains?|puts it)\b.*:\s*$"
 )
