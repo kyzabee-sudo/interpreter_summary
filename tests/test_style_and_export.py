@@ -9,6 +9,8 @@ from interpreter_summary.export import (
     strip_reflection_section,
 )
 from interpreter_summary.length import (
+    closing_quote_length_note,
+    extract_length_note,
     length_hint,
     qa_length_note,
     question_count,
@@ -41,9 +43,10 @@ def test_system_prompt_requires_current_format():
     assert "verbatim" in lowered
     assert "briefing" in lowered
     assert "cheerleader" in lowered
-    assert "15–25" in SYSTEM_PROMPT or "15-25" in SYSTEM_PROMPT
-    assert "40–60" in SYSTEM_PROMPT or "40-60" in SYSTEM_PROMPT
-    assert "400–550" in SYSTEM_PROMPT or "400-550" in SYSTEM_PROMPT
+    assert "30–45" in SYSTEM_PROMPT or "30-45" in SYSTEM_PROMPT
+    assert "35–70" in SYSTEM_PROMPT or "35-70" in SYSTEM_PROMPT
+    assert "length-note" in SYSTEM_PROMPT
+    assert "scales with article length" in lowered
     assert "briefly summarizing" in lowered
     assert "hagoth" in lowered
     assert "output only the post" in lowered
@@ -64,9 +67,13 @@ def test_style_guide_teaches_current_voice():
     assert "see you next time" in lowered
     assert "Do not write a Reflection" in guide
     assert "In this article" in guide
-    assert "400–550" in guide or "400-550" in guide
-    assert "15–25" in guide or "15-25" in guide
-    assert "40–60" in guide or "40-60" in guide
+    assert "200–330" in guide or "200-330" in guide
+    assert "450–750" in guide or "450-750" in guide
+    assert "30–45" in guide or "30-45" in guide
+    assert "35–70" in guide or "35-70" in guide
+    assert "60–110" in guide or "60-110" in guide
+    assert "length-note" in lowered
+    assert "bowen" in lowered
     assert "briefly summarizing" in lowered
     assert "hagoth is one of the coolest" in lowered
     assert "no preamble" in lowered
@@ -95,35 +102,82 @@ def test_user_prompt_includes_style_and_asks_for_video_script():
     assert "The Summary: about 450–900 words." in prompt
 
 
-def test_summary_word_targets_stay_flat_across_page_counts():
-    assert summary_word_target(8) == (400, 550, 700)
-    assert summary_word_target(16) == (400, 550, 700)
-    assert summary_word_target(26) == (400, 550, 700)
-    assert summary_word_target(82) == (400, 550, 700)
-    hint = length_hint(26, printed_start=425, printed_end=450)
+def _qa(answers: list[int], *, extra_question: bool = False) -> str:
+    parts = []
+    for index, words in enumerate(answers, start=1):
+        parts.append(f"### Question {index}?\n\n" + " ".join(["word"] * words))
+    if extra_question:
+        parts.append("### And a fourth?\n\n" + " ".join(["word"] * 40))
+    return "\n\n".join(parts)
+
+
+def test_summary_word_targets_scale_with_pages_and_tighten_on_body_words():
+    assert summary_word_target(8) == (200, 330, 400)
+    assert summary_word_target(12) == (200, 330, 400)
+    assert summary_word_target(16) == (330, 500, 650)
+    assert summary_word_target(24) == (330, 500, 650)
+    assert summary_word_target(26) == (380, 620, 800)
+    assert summary_word_target(40) == (380, 620, 800)
+    assert summary_word_target(42) == (450, 750, 950)
+    assert summary_word_target(82) == (450, 750, 950)
+    # Figure-heavy or note-heavy: body words select the shorter band.
+    assert summary_word_target(60, 9236) == (380, 620, 800)
+    assert summary_word_target(48, 7538) == (330, 500, 650)
+    # Squire 70_04: 16 pages and ~5.8k body words stay on the page band.
+    assert summary_word_target(16, 5780) == (330, 500, 650)
+    # A denser text does not raise the page band.
+    assert summary_word_target(24, 8488) == (330, 500, 650)
+    # A thin extract is ignored.
+    assert summary_word_target(30, 80) == (380, 620, 800)
+    hint = length_hint(26, printed_start=425, printed_end=450, body_words=9000)
     assert "26 PDF pages" in hint
-    assert "400–550" in hint
-    assert "15–25" in hint
-    assert "40–60" in hint
+    assert "380–620" in hint
+    assert "30–45" in hint
+    assert "35–70" in hint
+    assert "60–110" in hint
     assert "printed 425–450" in hint
     assert "three questions" in hint
+    assert "length-note" in hint
+    assert "Squire" in hint
     assert "see you next time" in hint
     assert "no preamble" in hint
     assert "Do not write a Reflection" in hint
     note = summary_length_note(849, 16)
     assert "over max" in note
+    assert "no reason given" in note
     assert "before the closing quote" in note
+    assert "13–24 pages" in note
     on_target = summary_length_note(450, 16)
     assert "on target" in on_target
     assert "before the closing quote" in on_target
     assert "long" in summary_length_note(600, 16)
-    assert "on target" in qa_length_note(145, 3)
-    assert "long" in qa_length_note(287, 3)
-    assert "3 questions" in qa_length_note(200, 3)
-    assert "expected 3" in qa_length_note(200, 4)
-    assert "on target" in takeaway_length_note(22)
-    assert "long" in takeaway_length_note(40)
-    assert "short" in takeaway_length_note(8)
+    assert "short" in summary_length_note(328, 16)
+    justified = summary_length_note(
+        328,
+        16,
+        justification="literary-structure study of one chapter, like Squire on Alma 63",
+    )
+    assert "heads-up" in justified
+    assert "over max" not in justified
+    assert "literary-structure" in justified
+    assert "heads-up" in summary_length_note(
+        1101,
+        24,
+        justification="nine parallel points, about 100 words each",
+    )
+    assert "on target" in qa_length_note(_qa([40, 55, 48]))
+    assert "short" in qa_length_note(_qa([40, 20, 48]))
+    assert "long" in qa_length_note(_qa([40, 80, 48]))
+    assert "over max" in qa_length_note(_qa([40, 95, 48]))
+    assert "3 questions" in qa_length_note(_qa([40, 55, 48]))
+    assert "expected 3" in qa_length_note(_qa([40, 55, 48], extra_question=True))
+    assert "on target" in takeaway_length_note(38)
+    assert "long" in takeaway_length_note(50)
+    assert "over max" in takeaway_length_note(60)
+    assert "short" in takeaway_length_note(22)
+    assert "on target" in closing_quote_length_note(90)
+    assert "short" in closing_quote_length_note(40)
+    assert "over max" in closing_quote_length_note(140)
     assert "on target" in video_length_note(10)
     assert "short" in video_length_note(4)
 
@@ -159,7 +213,25 @@ As Squire concludes (link to "Why does any"; page 83):
     prose = summary_prose(summary)
     assert "mine Alma" in prose
     assert "bells and whistles" not in prose
-    assert "As Squire concludes" not in prose
+    assert "As Squire concludes" in prose
+
+
+def test_extract_length_note_leaves_the_post_and_keeps_the_reason():
+    raw = (
+        "# Interpreting Interpreter: Alma 63\n\n"
+        "## The Takeaway\n\n"
+        "Squire outlines a chiasm.\n\n"
+        "<!-- length-note: below the band because this is a literary-structure study of one chapter -->\n"
+    )
+    cleaned, reason = extract_length_note(raw)
+    assert "length-note" not in cleaned
+    assert cleaned.startswith("# Interpreting Interpreter: Alma 63")
+    assert reason is not None
+    assert "literary-structure" in reason
+    headed = raw + "\n## Length note\n\nAbove the band because of nine parallels.\n"
+    cleaned, reason = extract_length_note(headed)
+    assert "## Length note" not in cleaned
+    assert "nine parallels" in (reason or "")
 
 
 def test_readable_text_rejoins_line_break_hyphenation():

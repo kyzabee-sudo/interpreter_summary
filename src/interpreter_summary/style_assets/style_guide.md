@@ -118,23 +118,29 @@ Z”) unless you are quoting.
    In the Word file, *Interpreter* is italic and the whole title is bold 16 pt.
 
 2. **The Takeaway**
-   One sentence, about 15–25 words. Start with the author’s surname and a
-   reporting verb. State the thesis **including the surprising concrete
-   detail**, not a teaser. No “this article discusses.” Do not add a second
-   sentence.
+   One sentence, or two. About 30–45 words, soft max 55. Start with the author’s
+   surname and a reporting verb. State the thesis **including the surprising
+   concrete detail**, not a teaser. No “this article discusses.”
 
-   Shape, tightened to one sentence (the Squire takeaway is the model; the
-   Clark and Ahlstrom lines below are shortened so they fit the band):
+   Shape from the measured posts (Ahlstrom and Clark sit in the band; Squire’s
+   published Alma 63 line is the short exception, not the target):
 
-   - “Squire outlines a chiasm in Alma 63:1–11 and the other literary forms around it.”
-   - “Ahlstrom finds Restoration details about Melchizedek fit the extra-biblical record.”
-   - “Clark sketches three apostle-scientists—Talmage, Widtsoe, and Merrill—in the early 1900s.”
+   - “Ahlstrom compares information provided about Melchizedek through Joseph
+     Smith with that given in several extra-biblical sources, finding that
+     details given through the Restoration are a good fit with what was recorded
+     about Melchizedek anciently.”
+   - “Clark provides a historical overview of the lives of three modern apostles
+     that were also credentialed scientists: James E. Talmage, John A. Widtsoe,
+     and Joseph F. Merrill, highlighting how science and education played a role
+     in Latter-day Saint leadership in the early 1900s.”
+   - “Squire outlines the literary structure of Alma 63, detailing a chiasm
+     spanning verses 1–11 as well as several other notable literary characteristics.”
 
 3. **The Q&A**
-   Exactly three questions. Each answer is 2–4 plain sentences, about 40–60
-   words. Explain what the point shows. Do not list every sub-element, verse
-   number, or parallel. The three answers together should carry the bones of
-   the article, not a second outline of the Summary.
+   Exactly three questions. Each answer is 2–4 plain sentences, about 35–70
+   words, soft max 90. Explain what the point shows. Do not list every
+   sub-element, verse number, or parallel. The three answers together should
+   carry the bones of the article, not a second outline of the Summary.
 
    Ask the questions a curious reader would actually ask (*What*, *How*, *Does*,
    *Did*, *Why*, *Were*, *Could*). Do not ask “What is the thesis?” or “What
@@ -200,20 +206,41 @@ Z”) unless you are quoting.
    the Summary. Do not add a Reflection after it. Do not stop the Summary before
    that block.
 
-   Length is counted **before** the closing quote, and it does not grow with
-   page count:
+   Length is counted **before** the closing quote. Locator text
+   `(link to "…"; page N)` is not counted. The band scales with the article.
+   Short summaries of long articles are the exception.
 
-   | Article | The Summary, before the closing quote | Hard max |
+   | Pages | Summary, before the closing quote | Soft max |
    | --- | --- | --- |
-   | Typical article | 400–550 words | 700 |
-   | Genuinely list-heavy (many distinct people or parallels) | may pass 550 | stay under 1000 |
+   | ≤12 | 200–330 | 400 |
+   | 13–24 | 330–500 | 650 |
+   | 25–40 | 380–620 | 800 |
+   | 41+ | 450–750 | 950 |
 
-   A 16-page article is still a typical article unless it really is a list of
-   many people or parallels. Do not pad a short narrative to reach 550. Do not
-   inventory the article to get past it. The checker treats anything over 550
-   as long and anything over 700 as over max, including a list-heavy draft.
-   Takeaway, Q&A, and the video script do not grow with page count. Mention an
-   appendix in one sentence if needed; do not summarize tables of sources.
+   If figures or heavy notes inflate the page count, the checker uses body
+   words instead, and only when that estimate is tighter: under 5k words like
+   ≤12 pages, 5–8k like 13–24, 8–11k like 25–40, 11k+ like 41+. The user prompt
+   names the band for this PDF. Follow that band by default.
+
+   Go **below** the band only when the article is a close reading of a single
+   passage, a literary-structure or wordplay study, or otherwise makes few
+   distinct points. In Kyler’s posts: Squire 70_04 (Alma 63) and 69_10 (Alma 16),
+   Bowen 68_01 and 67_12. Go **above** the band only for a list of many parallel
+   points, at about 100 words per point (Ahlstrom 70_01, nine Melchizedek
+   parallels). Do not pad a short narrative up to the high end, and do not
+   inventory every sub-element to get there.
+
+   The closing block quote is separate: about 60–110 words, soft max 130.
+
+   If the Summary leaves the band, say so in one sentence, and not in the post.
+   After the video script, add exactly this HTML comment and nothing else:
+
+   `<!-- length-note: below the band because this is a literary-structure study of one chapter -->`
+
+   The checker treats that note as a heads-up. An unexplained departure is
+   still short, long, or over the soft max. Takeaway and Q&A do not grow with
+   page count. Mention an appendix in one sentence if needed; do not summarize
+   tables of sources.
 
 5. **Video Script**
    A Markdown table of about 10 data rows (9–12 is acceptable). Header row:

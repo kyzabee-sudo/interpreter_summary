@@ -178,6 +178,31 @@ async def test_summarize_pdf_strips_preamble_glued_to_the_title(tmp_path):
 
 
 @pytest.mark.asyncio
+async def test_summarize_pdf_surfaces_a_length_note_outside_the_post(tmp_path):
+    pdf_path = write_sample_pdf(tmp_path / "article.pdf")
+    settings = Settings(xai_api_key="test-key", xai_model="grok-4.6")
+    note = (
+        "<!-- length-note: below the band because this is a close reading of one fragment -->\n"
+    )
+    transport = httpx.MockTransport(_handler(SAMPLE_SUMMARY_MARKDOWN + note))
+    async with httpx.AsyncClient(transport=transport, base_url="https://api.x.ai") as raw:
+        client = GrokClient(settings, client=raw)
+        result = await summarize_pdf(
+            pdf_path.read_bytes(),
+            "article.pdf",
+            settings,
+            client=client,
+        )
+    assert "length-note" not in result.markdown
+    assert "close reading" not in result.markdown
+    assert "close reading" in result.summary_length_note
+    document = Document(BytesIO(markdown_to_docx(result.markdown)))
+    assert all("close reading" not in paragraph.text for paragraph in document.paragraphs)
+    assert "closing quote" in result.closing_quote_length_note
+    assert "30–45" in result.takeaway_length_note or "30-45" in result.takeaway_length_note
+
+
+@pytest.mark.asyncio
 async def test_summarize_pdf_corrects_wrong_locator_pages(tmp_path):
     pdf_path = write_sample_pdf(tmp_path / "article.pdf")
     settings = Settings(xai_api_key="test-key", xai_model="grok-4.6")

@@ -10,16 +10,18 @@ Summary, and a video-script table. There is no Reflection section.
 ## What it produces
 
 1. **Title** — `Interpreting Interpreter: [Punchy Title]`
-2. **The Takeaway** — one sentence, about 15–25 words, including the concrete claim
-3. **The Q&A** — three questions, each answer 2–4 sentences and about 40–60 words
+2. **The Takeaway** — one or two sentences, about 30–45 words, including the concrete claim
+3. **The Q&A** — three questions, each answer about 35–70 words
 4. **The Summary** — opens `In this article, [Full Name]…`, walks the argument
    in order, and uses bullets when the article is a list of people, parallels,
    or elements. Locators are woven into the sentence
    (`After [briefly summarizing] (link to "opening words"; page N) the chapter`)
    and use **printed journal pages**. The section ends
-   `As [Author] concludes (link to "…"; page N):` plus a longer verbatim block
-   quote. For a typical article the Summary is about 400–550 words before that
-   closing quote; only a genuinely list-heavy article should run longer. After
+   `As [Author] concludes (link to "…"; page N):` plus a verbatim block quote
+   of about 60–110 words. Summary length scales with the article: about
+   200–330 words before the quote for a short article, up to about 450–750
+   for a long one. A close reading of one passage may go shorter (Squire,
+   Bowen); a list of many parallels may go longer (Ahlstrom). After
    Grok drafts, locators and block quotes in the Summary and Q&A
    are checked against the PDF text: wrong pages are corrected when the phrase
    is unique, paraphrased quotes are repaired to the article wording when the

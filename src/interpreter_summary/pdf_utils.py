@@ -60,6 +60,9 @@ class PdfPage:
 class PdfCorpus:
     pages: list[PdfPage]
     used_printed_pages: bool
+    # Body words at the main text size, when the PDF exposes font sizes.
+    # Notes and running furniture are left out. None if the extract failed.
+    body_words: int | None = None
 
     @property
     def page_count(self) -> int:
@@ -227,7 +230,48 @@ def extract_pdf_corpus(data: bytes) -> PdfCorpus:
         )
         for (viewer, text), journal in zip(texts, journal_pages, strict=True)
     ]
-    return PdfCorpus(pages=pages, used_printed_pages=used_printed)
+    return PdfCorpus(
+        pages=pages,
+        used_printed_pages=used_printed,
+        body_words=estimate_body_words(data),
+    )
+
+
+def estimate_body_words(data: bytes) -> int | None:
+    """Count words set in the article's main text size.
+
+    Interpreter PDFs usually store a font size of 1 and the real size in the
+    text matrix. The size that carries the most words is treated as the body.
+    Smaller text (notes, captions, running heads) is left out. Titles and
+    other larger text are kept. Returns None when the file yields no words.
+    """
+    reader = PdfReader(BytesIO(data))
+    buckets: dict[float, int] = {}
+
+    def visitor(text, cm, tm, font_dict, font_size):
+        words = len(re.findall(r"[A-Za-z0-9']+", text or ""))
+        if not words:
+            return
+        scale = 1.0
+        if tm is not None and len(tm) >= 4:
+            scale *= abs(float(tm[3])) or 1.0
+        if cm is not None and len(cm) >= 4:
+            scale *= abs(float(cm[3])) or 1.0
+        rendered = round(float(font_size) * scale, 1)
+        buckets[rendered] = buckets.get(rendered, 0) + words
+
+    for page in reader.pages:
+        page.extract_text(visitor_text=visitor)
+    if not buckets:
+        return None
+    usable = {size: count for size, count in buckets.items() if size >= 6}
+    if not usable:
+        # Sizes never left the unit square. Count every word rather than guess.
+        total = sum(buckets.values())
+        return total or None
+    modal = max(usable, key=usable.get)
+    body = sum(count for size, count in usable.items() if size + 0.05 >= modal)
+    return body or None
 
 
 def extract_pdf_text(data: bytes, max_chars: int = 500_000) -> str:

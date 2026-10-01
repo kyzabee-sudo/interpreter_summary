@@ -20,12 +20,12 @@ sentences. Not a lab notebook and not a clipped outline. Do not open with a \
 bare number (“Four.”) or a stack of verse numbers (“Verse 1 names…”). Say what \
 each point shows.
 
-1. The Takeaway — one sentence, about 15–25 words. Surname plus a reporting \
-verb. State the concrete claim, not a teaser.
+1. The Takeaway — one or two sentences, about 30–45 words (soft max 55). \
+Surname plus a reporting verb. State the concrete claim, not a teaser.
 2. The Q&A — exactly three questions a general reader would ask. Each answer \
-is 2–4 plain sentences, about 40–60 words. Explain the point; do not inventory \
-every sub-element. Questions are Markdown ### headings ending in ?. Do not \
-repeat the Takeaway as question 1.
+is 2–4 plain sentences, about 35–70 words (soft max 90). Explain the point; \
+do not inventory every sub-element. Questions are Markdown ### headings \
+ending in ?. Do not repeat the Takeaway as question 1.
 3. The Summary — third person, conversational and factual. Open with \
 “In this article, [Full Name]…”. Walk the argument in order. Weave each locator \
 into the sentence as the linked words: After [briefly summarizing] (link to \
@@ -35,9 +35,12 @@ sentence. When the article is a list of people, parallels, or elements, one \
 bullet per item may start with **[Short label]** (link to "opening words"; \
 page N). Then one or two sentences on what that item shows. At most one short \
 quoted phrase per bullet. The Summary must end with “As [Surname] concludes \
-(link to "opening words"; page N):” and a longer verbatim block quote. Obey \
-the Summary word target in the user prompt (about 400–550 words before that \
-quote). Do not recap the Takeaway in fancier words.
+(link to "opening words"; page N):” and a verbatim block quote of about 60–110 \
+words (soft max 130). Obey the Summary band in the user prompt. It scales \
+with article length. Follow it by default. Go below only for a close reading \
+of one passage, a literary-structure or wordplay study, or an article with \
+few distinct points. Go above only for a list of many parallel points, at \
+about 100 words per point. Do not recap the Takeaway in fancier words.
 4. Video Script — a Markdown table with columns #, Text, and Image, about \
 10 rows (9–12). Row 1 opens with a conversational hook about a person or \
 detail (“Hagoth is one of the coolest characters…”), not a table-of-contents \
@@ -47,7 +50,10 @@ table. The last row’s Text ends with “and I'll see you next time.” Do not 
 put Markdown block quotes inside cells.
 
 Output only the post. The first characters are the markdown title. No planning, \
-no search narration, no preamble before the title.
+no search narration, no preamble before the title. If the Summary leaves its \
+band, add one HTML comment after the video script and nowhere else: \
+<!-- length-note: below or above the band because … -->. That comment is not \
+part of the post. Do not explain the length choice in the prose.
 
 Do not write a Reflection section. Do not write the old boilerplate paragraph \
 that begins “This post is a summary of the article”. Do not invent an author-page \
@@ -107,6 +113,7 @@ def build_user_prompt(
         "Write a complete Interpreting Interpreter draft of that article.",
         "Include The Takeaway, The Q&A (exactly three questions), The Summary, and a Video Script table.",
         "End The Summary with As [Surname] concludes (link to \"opening words\"; page N): and a verbatim block quote.",
+        "Follow the Summary band for this article. If you leave it, add one HTML comment after the video script: <!-- length-note: why, in one sentence -->. Do not put that explanation in the post.",
         "Do not write a Reflection section.",
     ]
     if pagination_hint and pagination_hint.strip():
