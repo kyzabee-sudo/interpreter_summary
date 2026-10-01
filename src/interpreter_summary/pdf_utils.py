@@ -37,7 +37,11 @@ _CHAR_MAP = str.maketrans(
     }
 )
 _SOFT_HYPHEN_RE = re.compile(r"\u00ad\s*")
-_LINE_HYPHEN_RE = re.compile(r"(\w)-\s+(\w)")
+# Line-break hyphenation from PDF extractors: "writ -\nten" and "writ-\nten".
+# A compound with no line break ("thirty-seventh") is left alone.
+_LINE_HYPHEN_RE = re.compile(r"([A-Za-z])\s*-\s*\n\s*([A-Za-z])")
+# After dashes are mapped to "-", drop spaces so "hand — the" matches "hand-the".
+_DASH_SPACE_RE = re.compile(r"(?<=[A-Za-z])\s*-\s*(?=[A-Za-z])")
 
 
 class PdfError(ValueError):
@@ -156,6 +160,7 @@ def _prepare_text(text: str, *, casefold: bool) -> str:
     text = _LINE_HYPHEN_RE.sub(r"\1\2", text)
     text = text.translate(_CHAR_MAP)
     text = re.sub(r"\s+", " ", text).strip()
+    text = _DASH_SPACE_RE.sub("-", text)
     return text.casefold() if casefold else text
 
 

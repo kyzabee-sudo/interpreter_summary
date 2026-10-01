@@ -10,16 +10,17 @@ Summary, and a video-script table. There is no Reflection section.
 ## What it produces
 
 1. **Title** — `Interpreting Interpreter: [Punchy Title]`
-2. **The Takeaway** — one or two sentences, including the concrete claim
-3. **The Q&A** — three questions, each with an answer of a few sentences
+2. **The Takeaway** — one sentence, about 15–25 words, including the concrete claim
+3. **The Q&A** — three questions, each answer 2–4 sentences and about 40–60 words
 4. **The Summary** — opens `In this article, [Full Name]…`, walks the argument
    in order, and uses bullets when the article is a list of people, parallels,
-   or elements. Locators look like `[label] (link to "opening words"; page N)`
-   and use **printed journal pages**. The section usually ends
+   or elements. Locators are woven into the sentence
+   (`After [briefly summarizing] (link to "opening words"; page N) the chapter`)
+   and use **printed journal pages**. The section ends
    `As [Author] concludes (link to "…"; page N):` plus a longer verbatim block
-   quote. Length scales with PDF page count and then caps (about 450–900 words
-   for a 13–24 page article; a long element list may run higher, up to a hard
-   max). After Grok drafts, locators and block quotes in the Summary and Q&A
+   quote. For a typical article the Summary is about 400–550 words before that
+   closing quote; only a genuinely list-heavy article should run longer. After
+   Grok drafts, locators and block quotes in the Summary and Q&A
    are checked against the PDF text: wrong pages are corrected when the phrase
    is unique, paraphrased quotes are repaired to the article wording when the
    passage is clear, and unverifiable locators or quotes are dropped.
@@ -47,7 +48,11 @@ interpreter-summary init-samples
 ```
 
 The default model is `grok-4.6`, which supports PDF file attachments via the
-xAI Files API. Override with `XAI_MODEL` if needed.
+xAI Files API. Override with `XAI_MODEL` if needed. The client streams the
+response so a long reasoning model is not cut off by one silent wait.
+`REQUEST_TIMEOUT_SECONDS` (default 1200) is the gap allowed between streamed
+chunks. The PDF stays attached; xAI may search that file on its own, and there
+is no documented switch to turn those searches off without dropping the file.
 
 ## Web app
 

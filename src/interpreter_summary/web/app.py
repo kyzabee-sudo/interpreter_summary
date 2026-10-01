@@ -97,6 +97,8 @@ async def api_summarize(
         "locator_summary": result.verify_summary_line(),
         "summary_word_count": result.summary_word_count,
         "summary_length_note": result.summary_length_note,
+        "takeaway_word_count": result.takeaway_word_count,
+        "takeaway_length_note": result.takeaway_length_note,
         "qa_word_count": result.qa_word_count,
         "qa_length_note": result.qa_length_note,
         "video_row_count": result.video_row_count,
