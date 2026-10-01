@@ -3,9 +3,17 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from interpreter_summary.config import Settings
-from interpreter_summary.export import parse_sections
+from interpreter_summary.export import parse_sections, strip_reflection_section
 from interpreter_summary.grok import GrokClient
-from interpreter_summary.length import count_words, length_hint, summary_length_note
+from interpreter_summary.length import (
+    count_words,
+    length_hint,
+    qa_length_note,
+    question_count,
+    summary_length_note,
+    video_length_note,
+    video_row_count,
+)
 from interpreter_summary.locators import LocatorReport, verify_locators
 from interpreter_summary.pdf_utils import extract_pdf_corpus, validate_pdf
 from interpreter_summary.prompts import build_user_prompt, default_system_prompt
@@ -19,8 +27,9 @@ class SummaryResult:
     title: str
     intro: str
     takeaway: str
+    qa: str
     summary: str
-    reflection: str
+    video_script: str
     page_count: int
     locator_count: int
     locators_corrected: int
@@ -36,12 +45,16 @@ class SummaryResult:
     quote_report: QuoteReport
     summary_word_count: int
     summary_length_note: str
+    qa_word_count: int
+    qa_length_note: str
+    video_row_count: int
+    video_length_note: str
 
     def verify_summary_line(self) -> str:
         parts = [self.locator_report.summary_line()]
         if self.quote_report.examined:
             parts.append(self.quote_report.summary_line())
-        parts.append(self.summary_length_note)
+        parts.extend([self.summary_length_note, self.qa_length_note, self.video_length_note])
         return " · ".join(parts)
 
 
@@ -87,17 +100,23 @@ async def summarize_pdf(
         if owns_client:
             await grok.aclose()
 
-    locator_report = verify_locators(markdown, corpus)
+    drafted = strip_reflection_section(markdown)
+    locator_report = verify_locators(drafted, corpus)
     quote_report = verify_quotes(locator_report.markdown, corpus)
-    sections = parse_sections(quote_report.markdown)
+    cleaned = quote_report.markdown
+    sections = parse_sections(cleaned)
     summary_words = count_words(sections["summary"])
+    qa_words = count_words(sections["qa"])
+    questions = question_count(sections["qa"])
+    rows = video_row_count(sections["video_script"])
     return SummaryResult(
-        markdown=quote_report.markdown,
+        markdown=cleaned,
         title=sections["title"],
         intro=sections["intro"],
         takeaway=sections["takeaway"],
+        qa=sections["qa"],
         summary=sections["summary"],
-        reflection=sections["reflection"],
+        video_script=sections["video_script"],
         page_count=corpus.page_count,
         locator_count=locator_report.locator_count,
         locators_corrected=locator_report.corrected,
@@ -113,4 +132,8 @@ async def summarize_pdf(
         quote_report=quote_report,
         summary_word_count=summary_words,
         summary_length_note=summary_length_note(summary_words, corpus.page_count),
+        qa_word_count=qa_words,
+        qa_length_note=qa_length_note(qa_words, questions),
+        video_row_count=rows,
+        video_length_note=video_length_note(rows),
     )

@@ -1,118 +1,173 @@
-from interpreter_summary.export import parse_sections
-from interpreter_summary.length import length_hint, summary_length_note, summary_word_target
+from io import BytesIO
+
+from docx import Document
+
+from interpreter_summary.export import markdown_to_docx, parse_sections, strip_reflection_section
+from interpreter_summary.length import (
+    length_hint,
+    qa_length_note,
+    question_count,
+    summary_length_note,
+    summary_word_target,
+    video_length_note,
+    video_row_count,
+)
 from interpreter_summary.locators import locator_count, verify_locators
 from interpreter_summary.pdf_utils import PdfCorpus, PdfPage, normalize_for_match
 from interpreter_summary.prompts import SYSTEM_PROMPT, build_user_prompt
 from interpreter_summary.quotes import verify_quotes
-from interpreter_summary.style import load_style_text, strip_video_script
+from interpreter_summary.samples import SAMPLE_SUMMARY_MARKDOWN
+from interpreter_summary.style import load_style_text
 
 
-def test_system_prompt_forbids_video_script():
-    assert "video" in SYSTEM_PROMPT.lower()
+def test_system_prompt_requires_current_format():
+    lowered = SYSTEM_PROMPT.lower()
     assert "The Takeaway" in SYSTEM_PROMPT
-    assert "The Reflection" in SYSTEM_PROMPT
-    assert "printed journal page" in SYSTEM_PROMPT.lower()
-    assert "viewer" in SYSTEM_PROMPT.lower()
-    assert "verbatim" in SYSTEM_PROMPT.lower()
-    assert "briefing" in SYSTEM_PROMPT.lower()
-    assert "reservation" in SYSTEM_PROMPT.lower()
-    assert "cheerleader" in SYSTEM_PROMPT.lower()
-    assert "40–70" in SYSTEM_PROMPT or "40-70" in SYSTEM_PROMPT
-    assert "throat-clearing" in SYSTEM_PROMPT.lower()
-    assert "delve" in SYSTEM_PROMPT.lower()
-    assert "chatbot" in SYSTEM_PROMPT.lower()
+    assert "The Q&A" in SYSTEM_PROMPT
+    assert "The Summary" in SYSTEM_PROMPT
+    assert "Video Script" in SYSTEM_PROMPT
+    assert "Do not write a Reflection" in SYSTEM_PROMPT
+    assert "see you next week" in lowered
+    assert "exactly three" in lowered
+    assert "printed journal page" in lowered
+    assert "viewer" in lowered
+    assert "verbatim" in lowered
+    assert "briefing" in lowered
+    assert "cheerleader" in lowered
+    assert "20–55" in SYSTEM_PROMPT or "20-55" in SYSTEM_PROMPT
+    assert "throat-clearing" in lowered
+    assert "delve" in lowered
+    assert "chatbot" in lowered
+    assert "boilerplate" in lowered
 
 
-def test_style_guide_teaches_published_voice():
+def test_style_guide_teaches_current_voice():
     guide = load_style_text()
-    assert "briefing" in guide.lower()
-    assert "cheerleader" in guide.lower()
-    assert "reservation" in guide.lower()
-    assert "Lamanite Political Development" in guide
-    assert "Alma 29-shaped heart" in guide
+    lowered = guide.lower()
+    assert "briefing" in lowered
+    assert "cheerleader" in lowered
     assert "On Abstracting Thought" in guide
-    assert "Video Script" not in guide
-    assert "500–650" in guide
+    assert "The Q&A" in guide
+    assert "Video Script" in guide
+    assert "see you next week" in lowered
+    assert "Do not write a Reflection" in guide
+    assert "In this article" in guide
+    assert "450–900" in guide or "450-900" in guide
     assert "41+" in guide
     assert "Clarity first" in guide
     assert "sheds light" in guide
     assert "Banned habits" in guide
-    assert "green cacao" in guide
-    assert "I could only hope to be so lucky" in guide
+    assert "green cacao" in lowered
+    assert "plain" in lowered
+    assert "Alma 63" in guide
+    assert "Title page" in guide
 
 
-def test_user_prompt_includes_style_and_drops_script_instruction():
+def test_user_prompt_includes_style_and_asks_for_video_script():
     prompt = build_user_prompt(
         "House style goes here",
         extra_instructions="Keep it short.",
         pagination_hint="Printed journal pages are 425–450.",
-        length_hint_text="The Summary: about 500–650 words.",
+        length_hint_text="The Summary: about 450–900 words.",
     )
     assert "House style goes here" in prompt
-    assert "Do not include a video script" in prompt
+    assert "Video Script" in prompt
+    assert "Do not write a Reflection" in prompt
+    assert "Do not include a video script" not in prompt
     assert "Keep it short." in prompt
     assert "Printed journal pages are 425–450." in prompt
-    assert "The Summary: about 500–650 words." in prompt
+    assert "The Summary: about 450–900 words." in prompt
 
 
-def test_summary_word_targets_match_published_bands():
-    assert summary_word_target(8) == (250, 400, 450)
-    assert summary_word_target(20) == (400, 550, 600)
-    assert summary_word_target(26) == (500, 650, 700)
-    assert summary_word_target(82) == (600, 800, 850)
+def test_summary_word_targets_match_september_2026_bands():
+    assert summary_word_target(8) == (300, 500, 650)
+    assert summary_word_target(20) == (450, 900, 1400)
+    assert summary_word_target(26) == (650, 1200, 1600)
+    assert summary_word_target(82) == (800, 1400, 1800)
     hint = length_hint(26, printed_start=425, printed_end=450)
     assert "26 PDF pages" in hint
-    assert "500–650" in hint
+    assert "650–1200" in hint
     assert "printed 425–450" in hint
-    note = summary_length_note(1098, 26)
+    assert "three questions" in hint
+    assert "see you next week" in hint
+    assert "Do not write a Reflection" in hint
+    note = summary_length_note(1700, 26)
     assert "over max" in note
-    assert summary_length_note(519, 26).startswith("summary 519 words (on target")
+    assert summary_length_note(800, 26).startswith("summary 800 words (on target")
+    assert "3 questions" in qa_length_note(200, 3)
+    assert "expected 3" in qa_length_note(200, 4)
+    assert "on target" in video_length_note(10)
+    assert "short" in video_length_note(4)
 
 
-def test_strip_video_script_removes_script_section():
+def test_question_and_video_counts():
+    assert question_count(SAMPLE_SUMMARY_MARKDOWN) == 3
+    sections = parse_sections(SAMPLE_SUMMARY_MARKDOWN)
+    assert video_row_count(sections["video_script"]) == 10
+
+
+def test_parse_sections_for_current_format():
+    sections = parse_sections(SAMPLE_SUMMARY_MARKDOWN)
+    assert sections["title"] == "Interpreting Interpreter: Tokens, Not Tonnage"
+    assert sections["intro"] == ""
+    assert sections["takeaway"].startswith("Scholar argues")
+    assert "Fragment W" in sections["qa"]
+    assert "warehouse fragment" in sections["summary"]
+    assert "see you next week" in sections["video_script"]
+    assert "reflection" not in sections
+    assert locator_count(SAMPLE_SUMMARY_MARKDOWN) == 7
+    assert locator_count('[Lamanite politics] (link to “The present article”; page 426)') == 1
+    assert locator_count('**[The verb]** (link to "Three features"; page 2)') == 1
+
+
+def test_strip_reflection_section_drops_retired_block():
     text = """
-## The Takeaway
-Keep this.
-
-## Video Script
-Ignore this entire pitch.
-
-## The Reflection
-Keep this too.
-"""
-    stripped = strip_video_script(text)
-    assert "Keep this" in stripped
-    assert "Ignore this entire pitch" not in stripped
-    assert "Video Script" not in stripped
-
-
-def test_parse_sections_and_locators():
-    markdown = """
-# Interpreting Interpreter: Tokens, Not Tonnage
-
-This post is a summary of the article "Copper" by A. Sample Scholar.
-
-## The Takeaway
-
-Scholar argues that copper is a token.
-
 ## The Summary
 
-The warehouse fragment lists ingots (link to "The warehouse fragment"; page 1).
-Later evidence appears (link to "Three features"; page 2).
+Keep the summary.
 
 ## The Reflection
 
 I like the caution.
+
+## Video Script
+
+Keep the script.
 """
-    sections = parse_sections(markdown)
-    assert sections["title"] == "Interpreting Interpreter: Tokens, Not Tonnage"
-    assert "summary of the article" in sections["intro"]
-    assert sections["takeaway"].startswith("Scholar argues")
-    assert "warehouse fragment" in sections["summary"]
-    assert sections["reflection"].startswith("I like")
-    assert locator_count(markdown) == 2
-    assert locator_count('[Lamanite politics] (link to “The present article”; page 426)') == 1
+    stripped = strip_reflection_section(text)
+    assert "Keep the summary" in stripped
+    assert "I like the caution" not in stripped
+    assert "The Reflection" not in stripped
+    assert "Keep the script" in stripped
+
+
+def test_markdown_to_docx_matches_template_shape():
+    document = Document(BytesIO(markdown_to_docx(SAMPLE_SUMMARY_MARKDOWN)))
+    paragraphs = [paragraph.text for paragraph in document.paragraphs]
+    assert paragraphs[0].startswith("Interpreting Interpreter: Tokens, Not Tonnage")
+    title_runs = document.paragraphs[0].runs
+    assert any(run.italic and run.text == "Interpreter" for run in title_runs)
+    assert any(run.bold and run.font.size and run.font.size.pt == 16 for run in title_runs)
+    assert "The Takeaway" in paragraphs
+    assert "The Q&A" in paragraphs
+    assert "The Summary" in paragraphs
+    assert "Video Script" in paragraphs
+    assert "The Reflection" not in paragraphs
+    question = next(paragraph for paragraph in document.paragraphs if paragraph.text.startswith("What is Fragment"))
+    assert all((run.bold and run.italic) for run in question.runs if run.text.strip())
+    video = next(paragraph for paragraph in document.paragraphs if paragraph.text == "Video Script")
+    assert all(run.italic and not run.bold for run in video.runs if run.text.strip())
+    assert len(document.tables) == 1
+    table = document.tables[0]
+    assert [cell.text for cell in table.rows[0].cells] == ["#", "Text", "Image"]
+    assert len(table.rows) == 11
+    assert "see you next week" in table.rows[-1].cells[1].text
+    assert table.rows[-1].cells[2].text == "Title page"
+    bullet = next(paragraph for paragraph in document.paragraphs if paragraph.text.startswith("[The verb]"))
+    assert any(run.bold and run.text == "[The verb]" for run in bullet.runs)
+    section = document.sections[0]
+    assert section.left_margin.inches == 1
+    assert document.core_properties.author == "Kyler Rasmussen"
 
 
 def _corpus_from_pages(pages: dict[int, str], *, used_printed: bool = True) -> PdfCorpus:
@@ -154,6 +209,33 @@ As he concludes (link to “The Book of Mormon does not”; page 449):
     assert "No such paragraph exists here" not in report.markdown
     assert "A fake claim appears." in report.markdown
     assert locator_count(report.markdown) == 3
+
+
+def test_verify_locators_keeps_bold_labels_and_corrects_their_pages():
+    corpus = _corpus_from_pages(
+        {
+            2: "Three features of the surrounding clauses matter for the reading.",
+        }
+    )
+    markdown = '**[The verb]** (link to "Three features"; page 9). The verb means confirm.'
+    report = verify_locators(markdown, corpus)
+    assert report.corrected == 1
+    assert '**[The verb]** (link to "Three features"; page 2)' in report.markdown
+
+
+def test_verify_locators_in_qa_section():
+    corpus = _corpus_from_pages({4: "The Bible says nothing about his childhood."})
+    markdown = """
+## The Q&A
+
+### What do the extra-biblical texts add?
+
+They fill the silence (link to "The Bible says nothing"; page 1).
+"""
+    report = verify_locators(markdown, corpus)
+    assert report.corrected == 1
+    assert '(link to "The Bible says nothing"; page 4)' in report.markdown
+    assert "What do the extra-biblical texts add?" in report.markdown
 
 
 def test_verify_locators_does_not_guess_ambiguous_hits():
@@ -240,11 +322,11 @@ As Scholar concludes:
 
 > This sentence does not appear anywhere in the article at all.
 
-The Reflection follows.
+The next paragraph follows.
 """
     report = verify_quotes(markdown, corpus)
     assert report.dropped == 1
     assert "This sentence does not appear" not in report.markdown
     assert "As Scholar concludes:" not in report.markdown
     assert "The fragment lists ingots." in report.markdown
-    assert "The Reflection follows." in report.markdown
+    assert "The next paragraph follows." in report.markdown

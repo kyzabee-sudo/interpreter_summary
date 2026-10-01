@@ -11,9 +11,9 @@
       <p class="eyebrow">The Interpreter Foundation</p>
       <h1>Interpreting <em>Interpreter</em></h1>
       <p class="lede">
-        Upload an <em>Interpreter</em> article PDF. Grok drafts a summary in the
-        house style: Takeaway, Summary, Reflection, and in-text page locators.
-        Video scripts are ignored.
+        Upload an <em>Interpreter</em> article PDF. Grok drafts the current
+        house style: Takeaway, three Q&amp;A pairs, a page-cited Summary,
+        and a video-script table.
       </p>
     </header>
 
@@ -38,9 +38,9 @@
         <details class="advanced">
           <summary>Optional style override and notes</summary>
           <p>
-            The built-in style guide already matches Interpreting Interpreter.
-            Attach a Word document only if you want to replace it. Any
-            <strong>Video Script</strong> section is stripped automatically.
+            The built-in style guide already matches the September 2026 format.
+            Attach a Word or Markdown file only if you want to replace that guide.
+            A video-script table in an uploaded example is kept.
           </p>
           <label class="file-label">
             Style document (.docx or .md)
@@ -48,7 +48,7 @@
           </label>
           <label class="file-label">
             Extra instructions
-            <textarea id="notes-input" name="notes" rows="3" placeholder="e.g. keep the Takeaway under 40 words; emphasize the linguistic argument"></textarea>
+            <textarea id="notes-input" name="notes" rows="3" placeholder="e.g. emphasize the linguistic argument; keep the video script to 10 rows"></textarea>
           </label>
         </details>
 
@@ -75,7 +75,7 @@
     </main>
 
     <footer>
-      <p>Interpreting Interpreter summarizer v{{ version }}. Written summaries only.</p>
+      <p>Interpreting Interpreter summarizer v{{ version }}. Drafts include a video script.</p>
     </footer>
     <script src="/static/app.js"></script>
   </body>

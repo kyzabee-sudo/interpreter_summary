@@ -1,31 +1,37 @@
 # Interpreting Interpreter summarizer
 
 A small local app that accepts an *Interpreter* journal PDF and asks the
-[xAI Grok API](https://docs.x.ai) to draft a summary in the style of
+[xAI Grok API](https://docs.x.ai) to draft a post in the style of
 [Interpreting Interpreter](https://interpreterfoundation.org/interpreting-interpreter-on-abstracting-thought/).
 
-The written summary is the product. Video scripts that sometimes travel with
-the Word house-style document are ignored.
+The draft follows Kyler's format from early September 2026: Takeaway, Q&A,
+Summary, and a video-script table. There is no Reflection section.
 
 ## What it produces
 
 1. **Title** — `Interpreting Interpreter: [Punchy Title]`
-2. **Boilerplate intro** naming the article, author, and journal volume
-3. **The Takeaway** — one or two thesis sentences, including the surprising detail
-4. **The Summary** — an accessible walk through the argument, with locators
-   of the form `[label] (link to "opening words"; page N)` using **printed
-   journal pages**. Length scales with PDF page count and then caps (about
-   500–650 words for a ~26-page article). After Grok drafts, locators and
-   block quotes are checked against the PDF text: wrong pages are corrected
-   when the phrase is unique, paraphrased quotes are repaired to the article
-   wording when the passage is clear, and unverifiable locators or quotes are
-   dropped.
-5. **The Reflection** — first-person closing thoughts, usually with an honest reservation
+2. **The Takeaway** — one or two sentences, including the concrete claim
+3. **The Q&A** — three questions, each with an answer of a few sentences
+4. **The Summary** — opens `In this article, [Full Name]…`, walks the argument
+   in order, and uses bullets when the article is a list of people, parallels,
+   or elements. Locators look like `[label] (link to "opening words"; page N)`
+   and use **printed journal pages**. The section usually ends
+   `As [Author] concludes (link to "…"; page N):` plus a longer verbatim block
+   quote. Length scales with PDF page count and then caps (about 450–900 words
+   for a 13–24 page article; a long element list may run higher, up to a hard
+   max). After Grok drafts, locators and block quotes in the Summary and Q&A
+   are checked against the PDF text: wrong pages are corrected when the phrase
+   is unique, paraphrased quotes are repaired to the article wording when the
+   passage is clear, and unverifiable locators or quotes are dropped.
+5. **Video Script** — a table of about 10 rows pairing spoken narration with a
+   short image cue, ending `and I'll see you next week.`
 
 The built-in house style lives in
 `src/interpreter_summary/style_assets/style_guide.md`. A matching Word
-document, including a sample video script that the app strips out, is written
-to `samples/` when you generate fixtures.
+fixture is written to `samples/` when you generate samples. Word export follows
+Kyler's template: bold section labels, bold-italic questions, summary bullets,
+a plain closing quotation, and the video script as a three-column table
+(`#`, `Text`, `Image`).
 
 ## Setup
 

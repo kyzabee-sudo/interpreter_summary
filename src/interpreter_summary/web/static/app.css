@@ -184,12 +184,40 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
   margin-top: 2rem;
   color: var(--accent-dark);
 }
+.article h3 {
+  font-size: 1.05rem;
+  font-style: italic;
+  margin: 1.25rem 0 0.35rem;
+}
 .article blockquote {
   margin: 1rem 0;
   padding-left: 1rem;
   border-left: 3px solid var(--rule);
-  color: var(--muted);
-  font-style: italic;
+  font-style: normal;
+}
+.article table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0 0.5rem;
+  font-size: 0.95rem;
+}
+.article th,
+.article td {
+  border: 1px solid var(--rule);
+  padding: 0.45rem 0.6rem;
+  vertical-align: top;
+  text-align: left;
+}
+.article th {
+  font-family: var(--sans);
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.article td:first-child,
+.article th:first-child {
+  width: 2.5rem;
+  text-align: center;
 }
 
 footer {
