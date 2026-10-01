@@ -112,29 +112,27 @@ Z”) unless you are quoting.
 1. **Title line**
    `Interpreting Interpreter: [Short Punchy Title]`
    Compact, concrete, a little wry. Name the surprising object or claim, not the
-   method. Good: *Rocks and Hats*, *Debilitated by Chocolate*, *Alma 63’s Literary
-   Structure*, *Apostolic Scientists*, *Melchizedek-Related Parallels*.
+   method.    Good: *Rocks and Hats*, *Debilitated by Chocolate*, *Apostolic Scientists*,
+   *Melchizedek-Related Parallels*.
    Worse: *A Historiographical Review of Translation Accounts*.
    In the Word file, *Interpreter* is italic and the whole title is bold 16 pt.
 
 2. **The Takeaway**
-   One sentence, or two. About 30–45 words, soft max 55. Start with the author’s
+   One sentence, or two. About 20–35 words, soft max 45. Start with the author’s
    surname and a reporting verb. State the thesis **including the surprising
    concrete detail**, not a teaser. No “this article discusses.”
 
-   Shape from the measured posts (Ahlstrom and Clark sit in the band; Squire’s
-   published Alma 63 line is the short exception, not the target):
+   Write it in Kyler’s words. Do not hand back a light rewrite of the article’s
+   abstract.
+
+   Shape (Ahlstrom sits in this band):
 
    - “Ahlstrom compares information provided about Melchizedek through Joseph
      Smith with that given in several extra-biblical sources, finding that
      details given through the Restoration are a good fit with what was recorded
      about Melchizedek anciently.”
-   - “Clark provides a historical overview of the lives of three modern apostles
-     that were also credentialed scientists: James E. Talmage, John A. Widtsoe,
-     and Joseph F. Merrill, highlighting how science and education played a role
-     in Latter-day Saint leadership in the early 1900s.”
-   - “Squire outlines the literary structure of Alma 63, detailing a chiasm
-     spanning verses 1–11 as well as several other notable literary characteristics.”
+   - “Clark sketches three apostle-scientists—Talmage, Widtsoe, and Merrill—and
+     how their labs sat inside early-1900s Church leadership.”
 
 3. **The Q&A**
    Exactly three questions. Each answer is 2–4 plain sentences, about 35–70
@@ -142,10 +140,13 @@ Z”) unless you are quoting.
    sub-element, verse number, or parallel. The three answers together should
    carry the bones of the article, not a second outline of the Summary.
 
-   Ask the questions a curious reader would actually ask (*What*, *How*, *Does*,
-   *Did*, *Why*, *Were*, *Could*). Do not ask “What is the thesis?” or “What
-   method does the author use?” Do not make question 1 a restatement of the
-   Takeaway.
+   Question 1 asks about the article’s main claim, thesis, or proposed
+   structure (“What structure does he propose?”). Questions 2 and 3 cover how
+   that claim is supported or evaluated, plus one notable implication or
+   detail. Prefer the article’s big questions over a narrow side detail.
+   Ask them the way a curious reader would (*What*, *How*, *Does*, *Did*,
+   *Why*, *Were*, *Could*). Do not open on a minor object, and do not paste
+   the Takeaway back as the first answer.
 
    In Markdown, each question is a `###` heading ending in `?`. In the Word
    file those questions are bold italic; the answers are ordinary paragraphs.
@@ -153,14 +154,14 @@ Z”) unless you are quoting.
 
    Texture:
 
-   - “What type of structure does Squire propose for Alma 63?” followed by the
-     six-element chiasm and what the pairing is doing, not a verse-by-verse inventory.
-   - “Were these apostles able to balance possible tensions between science and
-     religion?” followed by a direct “Yes.” and the difference between Talmage’s
-     lectures and Widtsoe and Merrill’s reluctance.
-   - “Could Joseph have gotten those details from the Bible or other texts
-     available in the early 1800s?” followed by which texts were actually in
-     reach and which were not.
+   - Question 1: “What structure does he propose?” or “Were these apostles able
+     to hold science and religion together?” Name the claim, not a side object.
+   - Question 2: how the claim is supported. Clark’s answer can be a direct
+     “Yes.” and the difference between Talmage’s lectures and Widtsoe and
+     Merrill’s reluctance.
+   - Question 3: one implication or check. Ahlstrom asks whether Joseph could
+     have gotten those details from the Bible or other texts available in the
+     early 1800s, then says which texts were in reach and which were not.
 
    Q&A usually needs no locators. If a specific quotation needs a citation, use
    the same locator form as the Summary.
@@ -230,7 +231,7 @@ Z”) unless you are quoting.
    parallels). Do not pad a short narrative up to the high end, and do not
    inventory every sub-element to get there.
 
-   The closing block quote is separate: about 60–110 words, soft max 130.
+   The closing block quote is separate: about 60–125 words, soft max 140.
 
    If the Summary leaves the band, say so in one sentence, and not in the post.
    After the video script, add exactly this HTML comment and nothing else:
@@ -251,15 +252,17 @@ Z”) unless you are quoting.
      about 15–45 words. Contractions. Concrete. An occasional “I” is right
      here (“the scientist in me”, “I was a bit floored”) and wrong in the Summary.
    - **Image** is a short cue for the person who will drop in a picture.
-     A few words: `Title page`, `Ships of Hagoth`, `Verses 4 and 9`,
-     `Talmage in his lab. Giant crystals`. Not a paragraph, not a caption, and
+     A few words: `Title page`, `Talmage in his lab`, `Giant crystals`,
+     `Priestly garments`. Not a paragraph, not a caption, and
      not an image-generation prompt. Two pictures may be separated by a period.
    - Do not put page locators or Markdown block quotes in cells. A shortened
      closing line may sit in the narration after “as he concludes:”.
    - Shape: row 1 opens with a conversational hook about a person or a concrete
-     detail. Kyler’s Squire script starts “Hagoth is one of the coolest
-     characters in the Book of Mormon…”. No “welcome back”, and no
-     table-of-contents sentence (“Alma 63 can look like leftover history”).
+     detail. Clark can open on the scientist-apostle (“James Talmage kept a
+     laboratory and an apostleship…”). The worked example below opens “The
+     clerk who wrote Fragment W is one of the more careful people…”. No
+     “welcome back”, and no table-of-contents sentence. Do not spend a later
+     row repeating a point an earlier row already made.
      By row 2 or 3, name the author and the claim; the image cue there is often
      `Title page`. Middle rows walk two or three vivid details in order, one
      idea per row. The penultimate row may carry a short personal reaction or
@@ -327,9 +330,9 @@ Scholar argues that the bright copper in Fragment W is a covenant token rather t
 
 ## The Q&A
 
-### What is Fragment W?
+### What does Scholar claim the bright copper is?
 
-Fragment W is a short warehouse list that places ten ingots of bright copper immediately after an oath formula. Critics have read those ingots as ordinary trade goods sitting on a shelf.
+Fragment W is a short warehouse list that places ten ingots of bright copper immediately after an oath formula. Scholar reads those ingots as a covenant token, not as ordinary trade goods sitting on a shelf.
 
 ### Why does Scholar reject the inventory reading?
 
@@ -373,10 +376,10 @@ As Scholar concludes (link to "although copper can be cargo"; page 3):
 
 Use these for rhythm, not as text to copy onto a different article.
 
-Summary opening and bullets (Squire, Alma 63): the opening names the full author and keeps going in a warm sentence (“continues to mine the depths of Alma…”). Locators are woven in: `After [briefly summarizing] (link to "Helaman, a son"; page 70) the chapter, he outlines a [six-element chiasm] (link to "The first eleven verses"; page 71)`. Bullets may still start with a bold label (`[A and A’]`, `[B and B’]`, `[C and C’]`). Each bullet says what the pair shows. One short quoted phrase is enough; do not list every sub-element. A criteria paragraph follows. The Summary must close `As [Squire concludes] (link to "Why does any"; page 83):` and a verbatim block quote long enough to include both the “bells and whistles” sentence and the point about Mormon crafting conclusions.
+Summary opening and bullets (a literary-structure article): the opening names the full author and keeps going in a warm sentence. Locators are woven in: `After [briefly summarizing] (link to "opening words"; page N) the chapter, he outlines a [six-element chiasm] (link to "opening words"; page N)`. Bullets may still start with a bold label for each pair. Each bullet says what the pair shows. One short quoted phrase is enough; do not list every sub-element. A criteria paragraph follows. The Summary must close `As [Surname] concludes (link to "opening words"; page N):` and a verbatim block quote.
 
 Summary bullets (Clark): `In this article, David L. Clark summarizes the lives of three… These include:` then one long bullet each for James E. Talmage, John A. Widtsoe, and Joseph F. Merrill, birth through apostolic career, with locators on the load-bearing moments (the call, the mentor, the radio series). Close: `As [Clark concludes] (link to "A different category"; page 64):` and a quote on their publication record.
 
 Summary bullets (Ahlstrom): one bullet per parallel (“righteous in his youth”, “led people to repentance”, “uniquely great high priest”, and so on), each pairing a Restoration detail with the extra-biblical text that echoes it. Close on what Joseph could not have had in front of him.
 
-Video voice: row 1 is a conversational hook about a person or detail. Squire’s script opens “Hagoth is one of the coolest characters in the Book of Mormon…”. Clark can open on the scientist-apostle, Ahlstrom on extra-biblical Melchizedek. Name the author within a few rows, spend rows on one or two strange details, and land on `and I'll see you next time.` Image cues stay short: `Title page`, `Alma 63`, `Scopes trial`, `Priestly garments.`
+Video voice: row 1 is a conversational hook about a person or detail. Clark can open on the scientist-apostle (“James Talmage kept a laboratory and an apostleship…”). Ahlstrom can open on extra-biblical Melchizedek. The worked example opens “The clerk who wrote Fragment W is one of the more careful people…”. Name the author within a few rows, spend each middle row on a new detail, and do not repeat a point you already made. Land on `and I'll see you next time.` Image cues stay short: `Title page`, `Scopes trial`, `Priestly garments.`

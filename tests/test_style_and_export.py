@@ -43,12 +43,16 @@ def test_system_prompt_requires_current_format():
     assert "verbatim" in lowered
     assert "briefing" in lowered
     assert "cheerleader" in lowered
-    assert "30–45" in SYSTEM_PROMPT or "30-45" in SYSTEM_PROMPT
+    assert "20–35" in SYSTEM_PROMPT or "20-35" in SYSTEM_PROMPT
     assert "35–70" in SYSTEM_PROMPT or "35-70" in SYSTEM_PROMPT
+    assert "what structure does he propose" in lowered
+    assert "article’s abstract" in SYSTEM_PROMPT or "article's abstract" in lowered
+    assert "do not repeat" in lowered
+    assert "hagoth" not in lowered
     assert "length-note" in SYSTEM_PROMPT
     assert "scales with article length" in lowered
     assert "briefly summarizing" in lowered
-    assert "hagoth" in lowered
+    assert "fragment w" in lowered
     assert "output only the post" in lowered
     assert "throat-clearing" in lowered
     assert "delve" in lowered
@@ -69,13 +73,16 @@ def test_style_guide_teaches_current_voice():
     assert "In this article" in guide
     assert "200–330" in guide or "200-330" in guide
     assert "450–750" in guide or "450-750" in guide
-    assert "30–45" in guide or "30-45" in guide
+    assert "20–35" in guide or "20-35" in guide
     assert "35–70" in guide or "35-70" in guide
-    assert "60–110" in guide or "60-110" in guide
+    assert "60–125" in guide or "60-125" in guide
     assert "length-note" in lowered
     assert "bowen" in lowered
     assert "briefly summarizing" in lowered
-    assert "hagoth is one of the coolest" in lowered
+    assert "the clerk who wrote fragment w" in lowered
+    assert "hagoth" not in lowered
+    assert "what structure does he propose" in lowered
+    assert "abstract" in lowered
     assert "no preamble" in lowered
     assert "Clarity first" in guide
     assert "sheds light" in guide
@@ -132,9 +139,9 @@ def test_summary_word_targets_scale_with_pages_and_tighten_on_body_words():
     hint = length_hint(26, printed_start=425, printed_end=450, body_words=9000)
     assert "26 PDF pages" in hint
     assert "380–620" in hint
-    assert "30–45" in hint
+    assert "20–35" in hint
     assert "35–70" in hint
-    assert "60–110" in hint
+    assert "60–125" in hint
     assert "printed 425–450" in hint
     assert "three questions" in hint
     assert "length-note" in hint
@@ -171,13 +178,14 @@ def test_summary_word_targets_scale_with_pages_and_tighten_on_body_words():
     assert "over max" in qa_length_note(_qa([40, 95, 48]))
     assert "3 questions" in qa_length_note(_qa([40, 55, 48]))
     assert "expected 3" in qa_length_note(_qa([40, 55, 48], extra_question=True))
-    assert "on target" in takeaway_length_note(38)
-    assert "long" in takeaway_length_note(50)
-    assert "over max" in takeaway_length_note(60)
-    assert "short" in takeaway_length_note(22)
+    assert "on target" in takeaway_length_note(28)
+    assert "long" in takeaway_length_note(40)
+    assert "over max" in takeaway_length_note(50)
+    assert "short" in takeaway_length_note(12)
     assert "on target" in closing_quote_length_note(90)
+    assert "long" in closing_quote_length_note(130)
     assert "short" in closing_quote_length_note(40)
-    assert "over max" in closing_quote_length_note(140)
+    assert "over max" in closing_quote_length_note(150)
     assert "on target" in video_length_note(10)
     assert "short" in video_length_note(4)
 

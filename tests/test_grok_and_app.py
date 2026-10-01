@@ -199,7 +199,7 @@ async def test_summarize_pdf_surfaces_a_length_note_outside_the_post(tmp_path):
     document = Document(BytesIO(markdown_to_docx(result.markdown)))
     assert all("close reading" not in paragraph.text for paragraph in document.paragraphs)
     assert "closing quote" in result.closing_quote_length_note
-    assert "30–45" in result.takeaway_length_note or "30-45" in result.takeaway_length_note
+    assert "20–35" in result.takeaway_length_note or "20-35" in result.takeaway_length_note
 
 
 @pytest.mark.asyncio
