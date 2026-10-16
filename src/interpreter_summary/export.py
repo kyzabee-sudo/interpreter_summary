@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import re
+from importlib.resources import as_file, files
 from io import BytesIO
 
 from docx import Document
-from docx.enum.text import WD_LINE_SPACING
+from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
-from docx.shared import Inches, Pt, Twips
+from docx.shared import Inches, Pt, RGBColor, Twips
 
 HEADING_RE = re.compile(r"^(#{1,3})\s+(.*)$")
 HEADING_AT_LINE_START_RE = re.compile(r"(?m)^#{1,3}[ \t]+\S")
@@ -18,10 +19,20 @@ TITLE_HEADING_RE = re.compile(r"# Interpreting Interpreter\b", re.IGNORECASE)
 REFLECTION_RE = re.compile(r"^#{1,3}\s+(?:the\s+)?reflection\s*:?\s*$", re.IGNORECASE)
 RESUME_HEADING_RE = re.compile(r"^#{1,2}\s+\S")
 SEPARATOR_CELL_RE = re.compile(r":?-{3,}:?")
-LOCATOR_LABEL_RE = re.compile(r"(?<!\*)(\[[^\]]+\])\s+(?=\(link to\b)")
-INLINE_RE = re.compile(r"(\*\*[^*]+\*\*|\*[^*]+\*)")
+# **markers** are stripped. *italics* stay. Locators are coloured, never bold.
+BOLD_MARKER_RE = re.compile(r"\*\*([^*]+)\*\*")
+ITALIC_RE = re.compile(r"\*([^*]+)\*")
+LOCATOR_SPAN_RE = re.compile(
+    r"(?:\[[^\]]+\]\s*)?\(link to\s+[“\"”][^“\"”]+[“\"”];\s*page\s+\d+\)",
+    re.IGNORECASE,
+)
+LINK_QUOTE_RE = re.compile(
+    r"(\(link to\s+)[“\"”]([^“\"”]+)[“\"”](\s*;\s*page\s+\d+\))",
+    re.IGNORECASE,
+)
+LOCATOR_RED = RGBColor(0xFF, 0, 0)
 
-# Column widths from Kyler's September 2026 template (twips): #, Text, Image.
+# Column widths from Kyler's template (twips): #, Text, Image. Sum is tblW 9001.
 VIDEO_WIDTHS = (450, 6325, 2226)
 
 
@@ -113,14 +124,14 @@ def strip_reflection_section(markdown: str) -> str:
 
 
 def markdown_to_docx(markdown: str) -> bytes:
-    """Write a draft that follows Kyler's September 2026 Word template."""
-    document = Document()
+    """Write a draft that follows Kyler's Word template.
+
+    The template supplies Calibri through the theme minor font, docDefaults
+    (11 pt, 8 pt after, 1.08 line spacing), Table Grid, and List Paragraph
+    numbering. Nothing here sets a font name or single line spacing.
+    """
+    document = _document_from_template()
     _apply_page_setup(document)
-    normal = document.styles["Normal"]
-    normal.font.size = Pt(11)
-    paragraph_format = normal.paragraph_format
-    paragraph_format.space_after = Pt(8)
-    paragraph_format.line_spacing_rule = WD_LINE_SPACING.SINGLE
     document.core_properties.author = "Kyler Rasmussen"
 
     lines = markdown.replace("\r\n", "\n").split("\n")
@@ -151,7 +162,7 @@ def markdown_to_docx(markdown: str) -> bytes:
                 body = lines[index][2:] if lines[index].startswith("> ") else lines[index][1:]
                 parts.append(body.strip())
                 index += 1
-            _add_body(document, " ".join(part for part in parts if part))
+            _add_quote(document, " ".join(part for part in parts if part))
             continue
         if line.startswith(("- ", "* ")):
             _add_bullet(document, line[2:].strip())
@@ -168,6 +179,19 @@ def markdown_to_docx(markdown: str) -> bytes:
     return buffer.getvalue()
 
 
+def _document_from_template() -> Document:
+    """Open Kyler's template and drop its placeholder body, keeping sectPr."""
+    resource = files("interpreter_summary").joinpath("style_assets", "summary_template.docx")
+    with as_file(resource) as path:
+        document = Document(str(path))
+    body = document.element.body
+    for child in list(body):
+        if child.tag == qn("w:sectPr"):
+            continue
+        body.remove(child)
+    return document
+
+
 def _apply_page_setup(document: Document) -> None:
     section = document.sections[0]
     section.page_width = Inches(8.5)
@@ -180,21 +204,21 @@ def _apply_page_setup(document: Document) -> None:
 
 def _add_title(document: Document, text: str) -> None:
     paragraph = document.add_paragraph()
-    paragraph.paragraph_format.space_after = Pt(0)
+    paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
     match = re.match(r"^Interpreting Interpreter:\s*(.*)$", text)
+    _add_run(paragraph, " ", bold=True, size=16)
     if match:
         _add_run(paragraph, "Interpreting ", bold=True, size=16)
         _add_run(paragraph, "Interpreter", bold=True, italic=True, size=16)
         _add_run(paragraph, f": {match.group(1)}", bold=True, size=16)
     else:
         _add_run(paragraph, text, bold=True, size=16)
-    document.add_paragraph()
+    blank = document.add_paragraph()
+    blank.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
 
 def _add_section_heading(document: Document, text: str) -> None:
     paragraph = document.add_paragraph()
-    paragraph.paragraph_format.space_before = Pt(14)
-    paragraph.paragraph_format.space_after = Pt(4)
     if section_key(text) == "video_script":
         _add_run(paragraph, text, bold=False, italic=True)
     else:
@@ -203,47 +227,115 @@ def _add_section_heading(document: Document, text: str) -> None:
 
 def _add_question(document: Document, text: str) -> None:
     paragraph = document.add_paragraph()
-    paragraph.paragraph_format.space_before = Pt(8)
-    paragraph.paragraph_format.space_after = Pt(2)
     _add_inline(paragraph, text, bold=True, italic=True)
 
 
 def _add_body(document: Document, text: str) -> None:
     paragraph = document.add_paragraph()
-    paragraph.paragraph_format.space_after = Pt(8)
+    _add_inline(paragraph, text, bold=False, italic=False)
+
+
+def _add_quote(document: Document, text: str) -> None:
+    paragraph = document.add_paragraph()
+    paragraph.paragraph_format.left_indent = Twips(720)
+    _set_spacing(paragraph, after="0")
     _add_inline(paragraph, text, bold=False, italic=False)
 
 
 def _add_bullet(document: Document, text: str) -> None:
-    paragraph = document.add_paragraph(style="List Bullet")
-    paragraph.paragraph_format.space_after = Pt(6)
+    paragraph = document.add_paragraph(style="List Paragraph")
+    _apply_bullet_numbering(paragraph)
     _add_inline(paragraph, text, bold=False, italic=False)
 
 
+def _apply_bullet_numbering(paragraph) -> None:
+    """List Paragraph plus Kyler's '-' bullet (numId 1) and contextual spacing."""
+    p_pr = paragraph._p.get_or_add_pPr()
+    num_pr = OxmlElement("w:numPr")
+    ilvl = OxmlElement("w:ilvl")
+    ilvl.set(qn("w:val"), "0")
+    num_id = OxmlElement("w:numId")
+    num_id.set(qn("w:val"), "1")
+    num_pr.append(ilvl)
+    num_pr.append(num_id)
+    p_style = p_pr.find(qn("w:pStyle"))
+    if p_style is not None:
+        p_style.addnext(num_pr)
+    else:
+        p_pr.insert(0, num_pr)
+    if p_pr.find(qn("w:contextualSpacing")) is None:
+        p_pr.append(OxmlElement("w:contextualSpacing"))
+
+
+def _set_spacing(paragraph, *, after: str) -> None:
+    """Set space-after without dropping the template's 1.08 line spacing."""
+    p_pr = paragraph._p.get_or_add_pPr()
+    spacing = p_pr.find(qn("w:spacing"))
+    if spacing is None:
+        spacing = OxmlElement("w:spacing")
+        p_pr.append(spacing)
+    spacing.set(qn("w:after"), after)
+    spacing.set(qn("w:line"), "259")
+    spacing.set(qn("w:lineRule"), "auto")
+
+
+def _prepare_inline(text: str) -> str:
+    stripped = BOLD_MARKER_RE.sub(r"\1", text)
+    return LINK_QUOTE_RE.sub(
+        lambda match: f"{match.group(1)}\u201c{match.group(2)}\u201d{match.group(3)}",
+        stripped,
+    )
+
+
+def _inline_spans(prepared: str) -> list[tuple[int, int, str]]:
+    spans: list[tuple[int, int, str]] = []
+    for match in LOCATOR_SPAN_RE.finditer(prepared):
+        spans.append((match.start(), match.end(), "locator"))
+    for match in ITALIC_RE.finditer(prepared):
+        start, end = match.start(), match.end()
+        if any(start < stop and end > begin for begin, stop, _kind in spans):
+            continue
+        spans.append((start, end, "italic"))
+    spans.sort()
+    return spans
+
+
 def _add_inline(paragraph, text: str, *, bold: bool, italic: bool) -> None:
-    prepared = LOCATOR_LABEL_RE.sub(lambda match: f"**{match.group(1)}** ", text)
+    """Emit plain text. **markers** are dropped. Locators are red and never bold."""
+    prepared = _prepare_inline(text)
     cursor = 0
-    for match in INLINE_RE.finditer(prepared):
-        if match.start() > cursor:
-            _add_run(paragraph, prepared[cursor : match.start()], bold=bold, italic=italic)
-        token = match.group(0)
-        if token.startswith("**"):
-            _add_run(paragraph, token[2:-2], bold=True, italic=italic)
+    for start, end, kind in _inline_spans(prepared):
+        if start < cursor:
+            continue
+        if start > cursor:
+            _add_run(paragraph, prepared[cursor:start], bold=bold, italic=italic)
+        if kind == "locator":
+            _add_run(paragraph, prepared[start:end], bold=False, italic=False, color=LOCATOR_RED)
         else:
-            _add_run(paragraph, token[1:-1], bold=bold, italic=True)
-        cursor = match.end()
+            _add_run(paragraph, prepared[start + 1 : end - 1], bold=bold, italic=True)
+        cursor = end
     if cursor < len(prepared):
         _add_run(paragraph, prepared[cursor:], bold=bold, italic=italic)
     if not prepared:
         _add_run(paragraph, "", bold=bold, italic=italic)
 
 
-def _add_run(paragraph, text: str, *, bold: bool, italic: bool = False, size: int | None = None):
+def _add_run(
+    paragraph,
+    text: str,
+    *,
+    bold: bool,
+    italic: bool = False,
+    size: int | None = None,
+    color: RGBColor | None = None,
+):
     run = paragraph.add_run(text)
     run.bold = bold
     run.italic = italic
     if size is not None:
         run.font.size = Pt(size)
+    if color is not None:
+        run.font.color.rgb = color
     return run
 
 
@@ -278,7 +370,6 @@ def _add_table(document: Document, lines: list[str], index: int) -> int:
     columns = max(len(row) for row in rows)
     table = document.add_table(rows=len(rows), cols=columns)
     table.style = "Table Grid"
-    table.autofit = False
     widths = _column_widths(columns)
     _set_table_widths(table, widths)
     for row_index, row in enumerate(rows):
@@ -286,8 +377,8 @@ def _add_table(document: Document, lines: list[str], index: int) -> int:
             value = row[col_index] if col_index < len(row) else ""
             cell = table.rows[row_index].cells[col_index]
             paragraph = cell.paragraphs[0]
-            paragraph.paragraph_format.space_before = Pt(0)
-            paragraph.paragraph_format.space_after = Pt(0)
+            if row_index == 0:
+                paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
             _add_inline(paragraph, value, bold=row_index == 0, italic=False)
             _set_cell_width(cell, widths[col_index])
     return index
@@ -302,10 +393,11 @@ def _column_widths(columns: int) -> tuple[int, ...]:
 
 
 def _set_table_widths(table, widths: tuple[int, ...]) -> None:
-    table.autofit = False
-    table.allow_autofit = False
     tbl = table._tbl
     tbl_pr = tbl.tblPr
+    layout = tbl_pr.find(qn("w:tblLayout"))
+    if layout is not None:
+        tbl_pr.remove(layout)
     tbl_w = tbl_pr.find(qn("w:tblW"))
     if tbl_w is None:
         tbl_w = OxmlElement("w:tblW")

@@ -174,7 +174,7 @@ async def test_summarize_pdf_strips_preamble_glued_to_the_title(tmp_path):
     assert result.quotes_kept == 1
     document = Document(BytesIO(markdown_to_docx(result.markdown)))
     assert "I'll pull" not in document.paragraphs[0].text
-    assert document.paragraphs[0].text.startswith("Interpreting Interpreter: Tokens, Not Tonnage")
+    assert document.paragraphs[0].text.lstrip().startswith("Interpreting Interpreter: Tokens, Not Tonnage")
 
 
 @pytest.mark.asyncio
