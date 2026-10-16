@@ -179,18 +179,20 @@ Z”) unless you are quoting.
    Not: `he outlines the chapter [chapter summary] (link to "opening words"; page N).`
 
    When the article is a list of people, parallels, or elements, one bullet per
-   item may still start with a bold label. One or two sentences on what that
+   item may still start with a bracketed label. One or two sentences on what that
    item shows. At most one short quoted phrase in the bullet. Do not list every
    sub-element and verse number.
 
-   `* **[Short label]** (link to "opening words of the target paragraph"; page N). What this item shows, in a sentence or two.`
+   `* [Short label] (link to "opening words of the target paragraph"; page N). What this item shows, in a sentence or two.`
 
-   The bracketed label is the hyperlink text. Bold it. Clark uses one bullet
-   per apostle. Squire uses one bullet per chiasm pair (`[A and A’]`,
-   `[B and B’]`, `[C and C’]`), and each bullet says what the pair is doing
-   rather than inventorying every sub-element. Ahlstrom uses one bullet per
-   Melchizedek parallel. A narrative article may stay in paragraphs and weave
-   locators mid-sentence, with bullets only for a real list.
+   The bracketed label is the hyperlink text for that bullet lead. Do not bold
+   it. Never bold bracketed words inside sentences, Q&A answers, or the video
+   script. Clark uses one bullet per apostle. Squire uses one bullet per
+   chiasm pair (`[A and A’]`, `[B and B’]`, `[C and C’]`), and each bullet
+   says what the pair is doing rather than inventorying every sub-element.
+   Ahlstrom uses one bullet per Melchizedek parallel. A narrative article may
+   stay in paragraphs and weave locators mid-sentence, with bullets only for
+   a real list.
 
    After the bullets, add a short paragraph for criteria, caveats, or how the
    pieces fit when the article has one. Squire does this with Rappleye’s six
@@ -278,9 +280,9 @@ rarely, the Q&A) is drawn from the article, attach a locator in this exact shape
 
 `After [briefly summarizing] (link to "opening words of the target paragraph"; page N) the chapter`
 
-A bullet may still lead with the label:
+A bullet may still lead with the label. Do not wrap it in `**`:
 
-`**[short label]** (link to "opening words of the target paragraph"; page N)`
+`[short label] (link to "opening words of the target paragraph"; page N)`
 
 A trailing locator without the bracketed label is also acceptable:
 `(link to "opening words of the target paragraph"; page N)`
@@ -346,9 +348,9 @@ A table of Late Bronze Age treaty deposits shows metal tokens paired with oath w
 
 In this article, A. Sample Scholar revisits Fragment W. After [reading the list] (link to "The warehouse fragment"; page 1) of ten ingots of bright copper that sit immediately after an oath formula, he rejects the inventory reading. He then walks through [three features] (link to "Three features"; page 2) of the surrounding clauses:
 
-* **[The verb]** (link to "Three features"; page 2). The word translated "weigh" regularly means "confirm" when the object is a promise rather than a commodity.
-* **[The adjective]** (link to "Three features"; page 2). "Bright" clusters with words for holiness, not with words for ore.
-* **[The witness formula]** (link to "Three features"; page 2). The list ends "in the presence of three," which would be odd in a shipping receipt and ordinary in a covenant text.
+* [The verb] (link to "Three features"; page 2). The word translated "weigh" regularly means "confirm" when the object is a promise rather than a commodity.
+* [The adjective] (link to "Three features"; page 2). "Bright" clusters with words for holiness, not with words for ore.
+* [The witness formula] (link to "Three features"; page 2). The list ends "in the presence of three," which would be odd in a shipping receipt and ordinary in a covenant text.
 
 A comparative table of Late Bronze Age treaty deposits pairs metal tokens with oath witnesses (link to "A comparative table"; page 3). The analogy is suggestive, because the fragment is incomplete.
 
@@ -376,7 +378,7 @@ As Scholar concludes (link to "although copper can be cargo"; page 3):
 
 Use these for rhythm, not as text to copy onto a different article.
 
-Summary opening and bullets (a literary-structure article): the opening names the full author and keeps going in a warm sentence. Locators are woven in: `After [briefly summarizing] (link to "opening words"; page N) the chapter, he outlines a [six-element chiasm] (link to "opening words"; page N)`. Bullets may still start with a bold label for each pair. Each bullet says what the pair shows. One short quoted phrase is enough; do not list every sub-element. A criteria paragraph follows. The Summary must close `As [Surname] concludes (link to "opening words"; page N):` and a verbatim block quote.
+Summary opening and bullets (a literary-structure article): the opening names the full author and keeps going in a warm sentence. Locators are woven in: `After [briefly summarizing] (link to "opening words"; page N) the chapter, he outlines a [six-element chiasm] (link to "opening words"; page N)`. Bullets may still start with a bracketed label for each pair. Do not bold that label. Each bullet says what the pair shows. One short quoted phrase is enough; do not list every sub-element. A criteria paragraph follows. The Summary must close `As [Surname] concludes (link to "opening words"; page N):` and a verbatim block quote.
 
 Summary bullets (Clark): `In this article, David L. Clark summarizes the lives of three… These include:` then one long bullet each for James E. Talmage, John A. Widtsoe, and Joseph F. Merrill, birth through apostolic career, with locators on the load-bearing moments (the call, the mentor, the radio series). Close: `As [Clark concludes] (link to "A different category"; page 64):` and a quote on their publication record.
 

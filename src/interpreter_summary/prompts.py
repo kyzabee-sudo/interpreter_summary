@@ -36,7 +36,7 @@ into the sentence as the linked words: After [briefly summarizing] (link to \
 "opening words"; page N) the chapter, he outlines a [six-element chiasm] \
 (link to "opening words"; page N). Do not tack a label onto the end of a \
 sentence. When the article is a list of people, parallels, or elements, one \
-bullet per item may start with **[Short label]** (link to "opening words"; \
+bullet per item may start with [Short label] (link to "opening words"; \
 page N). Then one or two sentences on what that item shows. At most one short \
 quoted phrase per bullet. The Summary must end with “As [Surname] concludes \
 (link to "opening words"; page N):” and a verbatim block quote of about 60–125 \
@@ -77,8 +77,9 @@ appear in any academic blog, rewrite it until it could only be about this articl
 
 Use in-text locators woven into the sentence: \
 After [briefly summarizing] (link to "opening words of the target paragraph"; page N) the chapter. \
-A bullet may begin with a bold label: \
-**[short label]** (link to "opening words"; page N). \
+A bullet may begin with a bracketed label: \
+[short label] (link to "opening words"; page N). \
+Do not use ** around bracketed words. Never bold bracketed labels in bullet leads, sentences, Q&A answers, or the video script. \
 Page N is the printed journal page from running headers \
 (e.g. “426 • Interpreter 69 (2026)” or “Hudson, “Title” • 427”), \
 never the PDF viewer page index. If a printed page cannot be recovered, omit the locator. \

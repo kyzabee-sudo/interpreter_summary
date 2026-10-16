@@ -1,6 +1,10 @@
+import zipfile
 from io import BytesIO
+from xml.etree import ElementTree as ET
 
 from docx import Document
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.oxml.ns import qn
 
 from interpreter_summary.export import (
     markdown_to_docx,
@@ -54,6 +58,7 @@ def test_system_prompt_requires_current_format():
     assert "briefly summarizing" in lowered
     assert "fragment w" in lowered
     assert "output only the post" in lowered
+    assert "never bold bracketed labels" in lowered
     assert "throat-clearing" in lowered
     assert "delve" in lowered
     assert "chatbot" in lowered
@@ -91,6 +96,8 @@ def test_style_guide_teaches_current_voice():
     assert "plain" in lowered
     assert "Alma 63" in guide
     assert "Title page" in guide
+    assert "Bold it." not in guide
+    assert "Never bold bracketed words" in guide
 
 
 def test_user_prompt_includes_style_and_asks_for_video_script():
@@ -267,7 +274,7 @@ def test_strip_preamble_cuts_chatter_glued_to_the_title():
     assert sections["title"] == "Interpreting Interpreter: Alma 63"
     document = Document(BytesIO(markdown_to_docx(cleaned)))
     assert "I'll pull" not in document.paragraphs[0].text
-    assert document.paragraphs[0].text.startswith("Interpreting Interpreter: Alma 63")
+    assert document.paragraphs[0].text.lstrip().startswith("Interpreting Interpreter: Alma 63")
 
     lined = "I'll pull exact paragraph openings.\n\n# Interpreting Interpreter: Alma 63\n"
     assert strip_preamble(lined).startswith("# Interpreting Interpreter: Alma 63")
@@ -297,10 +304,15 @@ Keep the script.
 
 
 def test_markdown_to_docx_matches_template_shape():
-    document = Document(BytesIO(markdown_to_docx(SAMPLE_SUMMARY_MARKDOWN)))
+    data = markdown_to_docx(SAMPLE_SUMMARY_MARKDOWN)
+    document = Document(BytesIO(data))
     paragraphs = [paragraph.text for paragraph in document.paragraphs]
-    assert paragraphs[0].startswith("Interpreting Interpreter: Tokens, Not Tonnage")
-    title_runs = document.paragraphs[0].runs
+    assert paragraphs[0].lstrip().startswith("Interpreting Interpreter: Tokens, Not Tonnage")
+    title = document.paragraphs[0]
+    title_runs = title.runs
+    assert title_runs[0].text == " "
+    assert title.alignment == WD_ALIGN_PARAGRAPH.CENTER
+    assert document.paragraphs[1].text == ""
     assert any(run.italic and run.text == "Interpreter" for run in title_runs)
     assert any(run.bold and run.font.size and run.font.size.pt == 16 for run in title_runs)
     assert "The Takeaway" in paragraphs
@@ -308,21 +320,147 @@ def test_markdown_to_docx_matches_template_shape():
     assert "The Summary" in paragraphs
     assert "Video Script" in paragraphs
     assert "The Reflection" not in paragraphs
+    assert "TITLE" not in "\n".join(paragraphs)
+    assert "[Author]" not in "\n".join(paragraphs)
+    assert "Question 1" not in "\n".join(paragraphs)
     question = next(paragraph for paragraph in document.paragraphs if paragraph.text.startswith("What is Fragment"))
     assert all((run.bold and run.italic) for run in question.runs if run.text.strip())
+    takeaway = next(paragraph for paragraph in document.paragraphs if paragraph.text == "The Takeaway")
+    assert takeaway.paragraph_format.space_before is None
+    assert takeaway.paragraph_format.space_after is None
+    assert all(run.bold and not run.italic for run in takeaway.runs if run.text.strip())
     video = next(paragraph for paragraph in document.paragraphs if paragraph.text == "Video Script")
     assert all(run.italic and not run.bold for run in video.runs if run.text.strip())
+    quote = next(paragraph for paragraph in document.paragraphs if "memorializes a promise" in paragraph.text)
+    assert quote.paragraph_format.left_indent.twips == 720
+    assert quote.paragraph_format.space_after.pt == 0
     assert len(document.tables) == 1
     table = document.tables[0]
     assert [cell.text for cell in table.rows[0].cells] == ["#", "Text", "Image"]
     assert len(table.rows) == 11
     assert "see you next time" in table.rows[-1].cells[1].text
     assert table.rows[-1].cells[2].text == "Title page"
-    bullet = next(paragraph for paragraph in document.paragraphs if paragraph.text.startswith("[The verb]"))
-    assert any(run.bold and run.text == "[The verb]" for run in bullet.runs)
+    header = table.rows[0].cells[0].paragraphs[0]
+    assert header.alignment == WD_ALIGN_PARAGRAPH.CENTER
+    assert all(run.bold for run in header.runs if run.text.strip())
+    bullet = next(paragraph for paragraph in document.paragraphs if "[The verb]" in paragraph.text)
+    assert bullet.style.name == "List Paragraph"
+    num_pr = bullet._p.find(qn("w:pPr")).find(qn("w:numPr"))
+    assert num_pr.find(qn("w:ilvl")).get(qn("w:val")) == "0"
+    assert num_pr.find(qn("w:numId")).get(qn("w:val")) == "1"
+    label = next(run for run in bullet.runs if run.text.startswith("[The verb]"))
+    assert not label.bold
+    assert str(label.font.color.rgb) == "FF0000"
+    assert "\u201cThree features\u201d" in label.text
+    assert '(link to "' not in bullet.text
     section = document.sections[0]
     assert section.left_margin.inches == 1
     assert document.core_properties.author == "Kyler Rasmussen"
+    assert document.styles["Normal"].font.name is None
+    _assert_theme_and_no_font_names(data)
+
+
+W_NS = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
+A_NS = "{http://schemas.openxmlformats.org/drawingml/2006/main}"
+_FONT_NAME_ATTRS = ("ascii", "hAnsi", "cs", "eastAsia")
+
+
+def _assert_no_bold_brackets(document: Document) -> None:
+    paragraphs = list(document.paragraphs)
+    for table in document.tables:
+        for row in table.rows:
+            for cell in row.cells:
+                paragraphs.extend(cell.paragraphs)
+    for paragraph in paragraphs:
+        for run in paragraph.runs:
+            assert not (run.bold and "[" in (run.text or "")), run.text
+
+
+def _assert_theme_and_no_font_names(data: bytes) -> None:
+    with zipfile.ZipFile(BytesIO(data)) as archive:
+        theme = ET.fromstring(archive.read("word/theme/theme1.xml"))
+        minor = next(theme.iter(A_NS + "minorFont"))
+        latin = minor.find(A_NS + "latin")
+        assert latin is not None and latin.get("typeface") == "Calibri"
+        for name in ("word/document.xml", "word/styles.xml"):
+            root = ET.fromstring(archive.read(name))
+            for fonts in root.iter(W_NS + "rFonts"):
+                for attr in _FONT_NAME_ATTRS:
+                    assert fonts.get(W_NS + attr) in (None, ""), (name, fonts.attrib)
+    _assert_no_bold_brackets(Document(BytesIO(data)))
+
+
+def test_export_colours_locators_and_does_not_bold_brackets():
+    markdown = """
+# Interpreting Interpreter: Alma 63
+
+## The Q&A
+
+### What structure does he propose?
+
+**[Not a lead]** (link to "Why does any"; page 2) and the rest of the answer stays plain.
+
+## The Summary
+
+After [briefly summarizing] (link to "Helaman, a son"; page 2) the chapter, he outlines the chiasm.
+
+* **[A and A’]** (link to "Why does any"; page 2). The pair frames the chapter.
+* [B and B’] (link to "Why does any"; page 2). A plain lead is red too.
+
+As Squire concludes (link to "Why does any"; page 2):
+
+> Alma 63 [could easily] (link to "Why does any"; page 2) have been written plain.
+
+## Video Script
+
+| # | Text | Image |
+| --- | --- | --- |
+| 1 | **[Not bold]** (link to "Why does any"; page 2) spoken aloud. | Title page |
+"""
+    data = markdown_to_docx(markdown)
+    document = Document(BytesIO(data))
+    joined = "\n".join(paragraph.text for paragraph in document.paragraphs)
+    assert "TITLE" not in joined
+    assert "[Author]" not in joined
+    assert "Question 1" not in joined
+    _assert_no_bold_brackets(document)
+    _assert_theme_and_no_font_names(data)
+
+    woven = next(paragraph for paragraph in document.paragraphs if paragraph.text.startswith("After "))
+    locator = next(run for run in woven.runs if "briefly summarizing" in run.text)
+    assert locator.text.startswith("[briefly summarizing]")
+    assert locator.text.endswith("page 2)")
+    assert "\u201cHelaman, a son\u201d" in locator.text
+    assert not locator.bold
+    assert str(locator.font.color.rgb) == "FF0000"
+    tail = woven.runs[-1]
+    assert tail.text.startswith(" the chapter")
+    assert not tail.bold
+    assert tail.font.color.rgb is None
+
+    answer = next(paragraph for paragraph in document.paragraphs if "rest of the answer" in paragraph.text)
+    assert all(not run.bold for run in answer.runs)
+    answer_locator = next(run for run in answer.runs if run.text.startswith("[Not a lead]"))
+    assert str(answer_locator.font.color.rgb) == "FF0000"
+    assert any(not run.bold and "rest of the answer" in run.text for run in answer.runs)
+
+    lead = next(paragraph for paragraph in document.paragraphs if "[A and A’]" in paragraph.text)
+    lead_run = next(run for run in lead.runs if run.text.startswith("[A and A’]"))
+    assert not lead_run.bold
+    assert str(lead_run.font.color.rgb) == "FF0000"
+    assert any(not run.bold and "frames the chapter" in run.text for run in lead.runs)
+
+    quote = next(paragraph for paragraph in document.paragraphs if "have been written plain" in paragraph.text)
+    quote_locator = next(run for run in quote.runs if "[could easily]" in run.text)
+    assert not quote_locator.bold
+    assert str(quote_locator.font.color.rgb) == "FF0000"
+    assert any(not run.bold and "have been written plain" in run.text for run in quote.runs)
+
+    spoken = document.tables[0].rows[1].cells[1].paragraphs[0]
+    assert all(not run.bold for run in spoken.runs)
+    spoken_locator = next(run for run in spoken.runs if run.text.startswith("[Not bold]"))
+    assert str(spoken_locator.font.color.rgb) == "FF0000"
+    assert any("spoken aloud" in run.text and not run.bold for run in spoken.runs)
 
 
 def _corpus_from_pages(pages: dict[int, str], *, used_printed: bool = True) -> PdfCorpus:
