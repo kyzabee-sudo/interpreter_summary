@@ -20,6 +20,8 @@ class LocatorEdit:
     original_page: int
     final_page: int | None
     action: str  # kept | corrected | dropped
+    # Journal pages where the full phrase occurs. Empty when it occurs nowhere.
+    hit_pages: tuple[int, ...] = ()
 
 
 @dataclass
@@ -89,6 +91,7 @@ def verify_locators(markdown: str, corpus: PdfCorpus) -> LocatorReport:
         bracket = match.group("bracket") or ""
         label_is_bold = "**" in bracket
         hits = corpus.pages_containing(phrase)
+        exact_hits = tuple(corpus.phrase_pages(phrase))
         chosen = choose_journal_page(claimed, hits)
         start = match.start()
         if chosen is None:
@@ -114,6 +117,7 @@ def verify_locators(markdown: str, corpus: PdfCorpus) -> LocatorReport:
                 original_page=claimed,
                 final_page=chosen,
                 action=action,
+                hit_pages=exact_hits,
             )
         )
     pieces.append(markdown[last:])

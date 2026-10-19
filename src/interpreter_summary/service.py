@@ -2,9 +2,18 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from interpreter_summary.checks import (
+    Finding,
+    inspect_draft,
+    model_finding_resolved,
+    needs_revision,
+    render_check_report,
+    strip_embedded_check_report,
+    tidy_draft,
+)
 from interpreter_summary.config import Settings
 from interpreter_summary.export import parse_sections, strip_preamble, strip_reflection_section
-from interpreter_summary.grok import GrokClient
+from interpreter_summary.grok import GrokClient, GrokError
 from interpreter_summary.length import (
     closing_quote_length_note,
     closing_quote_text,
@@ -19,9 +28,18 @@ from interpreter_summary.length import (
     video_row_count,
 )
 from interpreter_summary.locators import LocatorReport, verify_locators
-from interpreter_summary.pdf_utils import extract_pdf_corpus, validate_pdf
+from interpreter_summary.pdf_utils import PdfCorpus, extract_pdf_corpus, validate_pdf
 from interpreter_summary.prompts import build_user_prompt, default_system_prompt
 from interpreter_summary.quotes import QuoteReport, verify_quotes
+from interpreter_summary.review import (
+    REVIEW_REASONING_EFFORT,
+    REVIEW_SYSTEM_PROMPT,
+    REVISION_SYSTEM_PROMPT,
+    build_review_user_prompt,
+    build_revision_user_prompt,
+    looks_like_post,
+    parse_model_findings,
+)
 from interpreter_summary.style import load_style_bytes, load_style_text
 
 
@@ -57,6 +75,11 @@ class SummaryResult:
     qa_length_note: str
     video_row_count: int
     video_length_note: str
+    check_report: str = ""
+    model_review: str = ""
+    revision: str = ""
+    checks_fixed: int = 0
+    checks_open: int = 0
 
     def verify_summary_line(self) -> str:
         parts = [self.locator_report.summary_line()]
@@ -69,6 +92,7 @@ class SummaryResult:
                 self.closing_quote_length_note,
                 self.qa_length_note,
                 self.video_length_note,
+                f"check {self.checks_fixed} fixed, {self.checks_open} open",
             ]
         )
         return " · ".join(parts)
@@ -83,6 +107,7 @@ async def summarize_pdf(
     style_filename: str | None = None,
     extra_instructions: str | None = None,
     client: GrokClient | None = None,
+    model_verify: bool = True,
 ) -> SummaryResult:
     validate_pdf(pdf_bytes, filename, settings.max_upload_bytes)
     corpus = extract_pdf_corpus(pdf_bytes)
@@ -113,19 +138,134 @@ async def summarize_pdf(
                 ),
             ),
         )
+        if file_id:
+            await grok.delete_file(file_id)
+            file_id = None
+        return await _finish_draft(
+            markdown,
+            corpus,
+            settings,
+            grok,
+            model_verify=model_verify,
+        )
     finally:
         if file_id:
             await grok.delete_file(file_id)
         if owns_client:
             await grok.aclose()
 
-    # Pull the length explanation before preamble stripping, in case the model
-    # parks the comment above the title. It must not remain in the post.
+
+def _prepare_draft(markdown: str, corpus: PdfCorpus):
+    """Strip chatter, then repair locators and quotes and tidy the surface."""
     markdown, length_justification = extract_length_note(markdown)
-    drafted = strip_preamble(strip_reflection_section(markdown))
+    drafted = strip_embedded_check_report(strip_preamble(strip_reflection_section(markdown)))
     locator_report = verify_locators(drafted, corpus)
     quote_report = verify_quotes(locator_report.markdown, corpus)
-    cleaned = quote_report.markdown
+    tidied, tidy_notes = tidy_draft(quote_report.markdown)
+    return tidied, length_justification, locator_report, quote_report, tidy_notes
+
+
+async def _finish_draft(
+    markdown: str,
+    corpus: PdfCorpus,
+    settings: Settings,
+    grok: GrokClient,
+    *,
+    model_verify: bool,
+) -> SummaryResult:
+    # Pull the length explanation before preamble stripping, in case the model
+    # parks the comment above the title. It must not remain in the post.
+    cleaned, length_justification, locator_report, quote_report, tidy_notes = _prepare_draft(
+        markdown, corpus
+    )
+    article_text, article_truncated = corpus.marked_text()
+    pagination = corpus.pagination_hint()
+    audit = inspect_draft(
+        cleaned,
+        corpus,
+        article_pages=corpus.page_count,
+        body_words=corpus.body_words,
+        justification=length_justification,
+        locator_report=locator_report,
+        quote_report=quote_report,
+    )
+    fixed_notes = [*tidy_notes, *audit.fixed_notes]
+    open_findings = list(audit.open_findings)
+
+    model_findings: list[Finding] = []
+    if not model_verify:
+        review_status = (
+            "skipped (--no-verify). Deterministic checks ran offline and did not call the API."
+        )
+        revision_status = "skipped with the model review"
+    else:
+        review_status, model_findings = await _review_draft(
+            grok,
+            settings,
+            pagination=pagination,
+            article_text=article_text,
+            article_truncated=article_truncated,
+            draft=cleaned,
+            open_findings=open_findings,
+        )
+        if needs_revision(open_findings, model_findings):
+            prior_open = list(open_findings)
+            revision_status, revised, revised_justification = await _revise_draft(
+                grok,
+                pagination=pagination,
+                article_text=article_text,
+                article_truncated=article_truncated,
+                draft=cleaned,
+                findings=[*open_findings, *model_findings],
+            )
+            if revised is not None:
+                if revised_justification:
+                    length_justification = revised_justification
+                cleaned, _ignored, locator_report, quote_report, tidy_notes = _prepare_draft(
+                    revised, corpus
+                )
+                audit = inspect_draft(
+                    cleaned,
+                    corpus,
+                    article_pages=corpus.page_count,
+                    body_words=corpus.body_words,
+                    justification=length_justification,
+                    locator_report=locator_report,
+                    quote_report=quote_report,
+                )
+                fixed_notes.extend(tidy_notes)
+                fixed_notes.extend(audit.fixed_notes)
+                fixed_notes.append("One revision pass rewrote the draft. It was told not to invent claims.")
+                for finding in model_findings:
+                    if model_finding_resolved(finding, cleaned):
+                        fixed_notes.append(_addressed_note(finding))
+                still_model = [
+                    finding
+                    for finding in model_findings
+                    if not model_finding_resolved(finding, cleaned)
+                ]
+                carried = [
+                    finding
+                    for finding in prior_open
+                    if finding.code in {"locator-dropped", "quote-dropped", "locator-partial"}
+                    and not (finding.evidence and finding.evidence in cleaned)
+                ]
+                open_findings = _dedupe_findings([*audit.open_findings, *still_model, *carried])
+            else:
+                open_findings = [*open_findings, *model_findings]
+        else:
+            revision_status = "not needed"
+            open_findings = [*open_findings, *model_findings]
+
+    visible = [finding for finding in open_findings if finding.severity != "info"]
+    check_report = render_check_report(
+        corpus=corpus,
+        review_status=review_status,
+        revision_status=revision_status,
+        fixed_notes=_dedupe(fixed_notes),
+        open_findings=open_findings,
+        count_lines_text=audit.count_lines,
+    )
     sections = parse_sections(cleaned)
     summary_words = count_words(summary_prose(sections["summary"]))
     quote_words = count_words(closing_quote_text(sections["summary"]))
@@ -168,4 +308,117 @@ async def summarize_pdf(
         qa_length_note=qa_length_note(sections["qa"]),
         video_row_count=rows,
         video_length_note=video_length_note(rows),
+        check_report=check_report,
+        model_review=review_status,
+        revision=revision_status,
+        checks_fixed=len(_dedupe(fixed_notes)),
+        checks_open=len(visible),
     )
+
+
+async def _review_draft(
+    grok: GrokClient,
+    settings: Settings,
+    *,
+    pagination: str,
+    article_text: str,
+    article_truncated: bool,
+    draft: str,
+    open_findings: list[Finding],
+) -> tuple[str, list[Finding]]:
+    try:
+        raw = await grok.complete_text(
+            system_prompt=REVIEW_SYSTEM_PROMPT,
+            user_prompt=build_review_user_prompt(
+                pagination=pagination,
+                article_text=article_text,
+                article_truncated=article_truncated,
+                draft=draft,
+                open_findings=open_findings,
+            ),
+            reasoning_effort=REVIEW_REASONING_EFFORT,
+        )
+    except GrokError as exc:
+        return f"failed ({_short_error(exc)}). The draft was still saved.", []
+    findings, error = parse_model_findings(raw)
+    if error:
+        return (
+            f"ran on {settings.xai_model} with reasoning effort {REVIEW_REASONING_EFFORT}, "
+            f"but {error[0].lower()}{error[1:]} The PDF was not attached. "
+            "No model issues were applied.",
+            [],
+        )
+    return (
+        f"ran on {settings.xai_model} with reasoning effort {REVIEW_REASONING_EFFORT}. "
+        "The article was sent as text. The PDF was not attached, so it was not searched again.",
+        findings,
+    )
+
+
+async def _revise_draft(
+    grok: GrokClient,
+    *,
+    pagination: str,
+    article_text: str,
+    article_truncated: bool,
+    draft: str,
+    findings: list[Finding],
+) -> tuple[str, str | None, str | None]:
+    try:
+        raw = await grok.complete_text(
+            system_prompt=REVISION_SYSTEM_PROMPT,
+            user_prompt=build_revision_user_prompt(
+                pagination=pagination,
+                article_text=article_text,
+                article_truncated=article_truncated,
+                draft=draft,
+                findings=findings,
+            ),
+            reasoning_effort=REVIEW_REASONING_EFFORT,
+        )
+    except GrokError as exc:
+        return f"failed ({_short_error(exc)}). The previous draft was kept.", None, None
+    if not looks_like_post(raw):
+        return "rejected because the response was not a post. The previous draft was kept.", None, None
+    revised, justification = extract_length_note(raw)
+    return "applied once", revised, justification
+
+
+def _addressed_note(finding: Finding) -> str:
+    page = f" (journal page {finding.page})" if finding.page else ""
+    evidence = f" Article: “{finding.evidence}”." if finding.evidence else ""
+    return (
+        f"Revision was asked to fix {finding.location}: {finding.problem} "
+        f"The quoted draft wording is gone.{page}{evidence} "
+        "This was not sent through a second model check."
+    )
+
+
+def _dedupe_findings(findings: list[Finding]) -> list[Finding]:
+    seen: set[tuple[str, str, str]] = set()
+    kept: list[Finding] = []
+    for finding in findings:
+        key = (finding.code, finding.location, finding.problem)
+        if key in seen:
+            continue
+        seen.add(key)
+        kept.append(finding)
+    return kept
+
+
+def _dedupe(notes: list[str]) -> list[str]:
+    seen: set[str] = set()
+    kept: list[str] = []
+    for note in notes:
+        if not note or note in seen:
+            continue
+        seen.add(note)
+        kept.append(note)
+    return kept
+
+
+def _short_error(exc: GrokError) -> str:
+    text = str(exc).replace("\n", " ").strip()
+    if len(text) > 240:
+        return text[:237].rstrip() + "…"
+    return text

@@ -12,8 +12,12 @@ const resultMeta = document.getElementById("result-meta");
 const copyBtn = document.getElementById("copy-btn");
 const mdBtn = document.getElementById("md-btn");
 const docxBtn = document.getElementById("docx-btn");
+const checkBtn = document.getElementById("check-btn");
+const verifyInput = document.getElementById("verify-input");
+const checkReportEl = document.getElementById("check-report");
 
 let lastMarkdown = "";
+let lastCheckReport = "";
 
 function setStatus(message, show = true) {
   statusEl.hidden = !show;
@@ -58,10 +62,15 @@ form.addEventListener("submit", async (event) => {
   body.append("pdf", pdfInput.files[0]);
   if (styleInput.files[0]) body.append("style", styleInput.files[0]);
   if (notesInput.value.trim()) body.append("notes", notesInput.value.trim());
+  body.append("verify", verifyInput.checked ? "1" : "0");
 
   submitBtn.disabled = true;
   resultEl.hidden = true;
-  setStatus("Uploading the PDF and asking Grok to read the article. Longer papers can take a few minutes.");
+  checkReportEl.hidden = true;
+  const wait = verifyInput.checked
+    ? "Uploading the PDF and asking Grok to read the article, then checking the draft. Longer papers can take a few minutes."
+    : "Uploading the PDF and asking Grok to read the article. Longer papers can take a few minutes.";
+  setStatus(wait);
 
   try {
     const response = await fetch("/api/summarize", { method: "POST", body });
@@ -70,8 +79,11 @@ form.addEventListener("submit", async (event) => {
       throw new Error(payload.detail || "Summary failed.");
     }
     lastMarkdown = payload.markdown;
+    lastCheckReport = payload.check_report || "";
     resultHtml.innerHTML = payload.html;
     resultMeta.textContent = `${payload.page_count} PDF pages · ${payload.locator_summary} · ${payload.model}`;
+    checkReportEl.textContent = lastCheckReport;
+    checkReportEl.hidden = !lastCheckReport;
     resultEl.hidden = false;
     setStatus("Draft ready. Edit before publishing.", true);
   } catch (error) {
@@ -91,6 +103,13 @@ copyBtn.addEventListener("click", async () => {
 
 mdBtn.addEventListener("click", () => {
   downloadBlob(new Blob([lastMarkdown], { type: "text/markdown" }), "interpreting-interpreter-summary.md");
+});
+
+checkBtn.addEventListener("click", () => {
+  downloadBlob(
+    new Blob([lastCheckReport], { type: "text/markdown" }),
+    "interpreting-interpreter-summary.check.md",
+  );
 });
 
 docxBtn.addEventListener("click", async () => {
