@@ -108,9 +108,20 @@ def verify_locators(markdown: str, corpus: PdfCorpus) -> LocatorReport:
             replacement = format_locator(label, phrase, chosen, bold=label_is_bold)
             action = "corrected"
             report.corrected += 1
-        pieces.append(markdown[last:start])
+        end = match.end()
+        if action == "dropped":
+            # A removed locator can leave "word  ." or "word . Next". Eat only
+            # the spaces that touch this locator. "from . Robb" elsewhere is a
+            # dropped initial and has to stay visible to the surface check.
+            skipped = re.match(r"[ \t]+(?=[.,;:])", markdown[end:])
+            if skipped:
+                end += skipped.end()
+        chunk = markdown[last:start]
+        if action == "dropped" and not replacement and markdown[end : end + 1] in ".,;:":
+            chunk = chunk.rstrip(" \t")
+        pieces.append(chunk)
         pieces.append(replacement)
-        last = match.end()
+        last = end
         report.edits.append(
             LocatorEdit(
                 phrase=phrase,
@@ -126,7 +137,10 @@ def verify_locators(markdown: str, corpus: PdfCorpus) -> LocatorReport:
 
 
 def _tidy_dropped_spacing(text: str) -> str:
-    text = re.sub(r"[ \t]+\.", ".", text)
+    # Collapse leftover "word ." / "word ," from a removed locator. Do not
+    # rewrite "from . Robb Smith": space, period, then a name is a dropped
+    # initial, and the surface check flags it instead of silently joining it.
+    text = re.sub(r"[ \t]+\.(?![ \t]+[A-Z])", ".", text)
     text = re.sub(r"[ \t]+,", ",", text)
     text = re.sub(r"[ \t]{2,}", " ", text)
     return text

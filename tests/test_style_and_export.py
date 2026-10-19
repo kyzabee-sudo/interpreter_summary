@@ -517,6 +517,20 @@ As he concludes (link to “The Book of Mormon does not”; page 449):
     assert locator_count(report.markdown) == 3
 
 
+def test_dropped_locator_spacing_keeps_a_dropped_initial():
+    corpus = _corpus_from_pages({1: "The present article continues an earlier study."})
+    markdown = (
+        'A fake claim appears  (link to "No such paragraph exists here"; page 440). '
+        "The next sentence stays.\n"
+        "In this article, from . Robb Smith reads the opening.\n"
+    )
+    report = verify_locators(markdown, corpus)
+    assert report.dropped == 1
+    assert "A fake claim appears. The next sentence stays." in report.markdown
+    assert "from . Robb Smith" in report.markdown
+    assert "from. Robb" not in report.markdown
+
+
 def test_verify_locators_corrects_a_label_woven_into_the_sentence():
     corpus = _corpus_from_pages(
         {

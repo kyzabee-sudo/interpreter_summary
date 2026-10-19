@@ -427,7 +427,7 @@ The opening frame is doing structural work, and the article stays inside 1 Nephi
 
 ## The Summary
 
-In this article, Robb Smith reads the opening. After [lands at E3] (link to "If Nephi's prologue establishes"; page 156) the vision, he treats the frame as deliverance. XXXXX
+In this article, from . Robb Smith reads the opening. After [lands at E3] (link to "If Nephi's prologue establishes"; page 156) the vision, he treats the frame as deliverance. XXXXX
 
 As Smith concludes (link to "may extend through the rest"; page 155):
 
@@ -478,6 +478,8 @@ As Smith concludes (link to "may extend through the rest"; page 155):
     assert "skipped (--no-verify)" in result.check_report
     assert "155" in result.check_report and "156" in result.check_report
     assert "XXXXX" in result.check_report
+    assert "from . Robb" in result.markdown
+    assert "dropped initial" in result.check_report
     assert "PDF viewer page + 154" in result.check_report
     assert "Check report" not in result.markdown
 
