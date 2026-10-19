@@ -76,6 +76,48 @@ class PdfCorpus:
     def journal_end(self) -> int | None:
         return self.pages[-1].journal_page if self.pages else None
 
+    def phrase_pages(self, phrase: str) -> list[int]:
+        """Journal pages that contain the full phrase.
+
+        Hyphenation, line breaks, and curly quotes are folded. A shorter
+        prefix is not treated as a match.
+        """
+        needle = normalize_for_match(phrase)
+        if not needle:
+            return []
+        return [page.journal_page for page in self.pages if needle in page.normalized]
+
+    def journal_offset(self) -> int | None:
+        """Return journal_page − PDF viewer page, when printed pages were found.
+
+        PDF viewer page 1 is journal page ``1 + offset``. Locators cite the
+        journal page, not the viewer index.
+        """
+        if not self.used_printed_pages or not self.pages:
+            return None
+        offsets = sorted(page.journal_page - page.viewer_page for page in self.pages)
+        return offsets[len(offsets) // 2]
+
+    def marked_text(self, max_chars: int = 400_000) -> tuple[str, bool]:
+        """Journal-page marked body text for a text-only model check.
+
+        The PDF is not reattached. Truncation stays under the long-context
+        price step for a typical article plus the draft.
+        """
+        chunks: list[str] = []
+        total = 0
+        truncated = False
+        for page in self.pages:
+            block = f"[Page {page.journal_page}]\n{page.text.strip()}\n"
+            if total + len(block) > max_chars:
+                truncated = True
+                break
+            chunks.append(block)
+            total += len(block)
+        if truncated:
+            chunks.append("\n[Truncated for length. Later pages were not sent.]\n")
+        return "\n".join(chunks), truncated
+
     def pages_containing(self, phrase: str) -> list[int]:
         needle = normalize_for_match(phrase)
         if not needle:

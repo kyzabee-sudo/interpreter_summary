@@ -260,6 +260,8 @@ def test_health_and_index():
     assert "Interpreting" in home.text
     assert "Q&amp;A" in home.text
     assert "video-script" in home.text
+    assert "verify-input" in home.text
+    assert "check-report" in home.text
     assert "Reflection" not in home.text
 
 

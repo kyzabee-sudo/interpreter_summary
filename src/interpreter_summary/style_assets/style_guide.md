@@ -37,7 +37,20 @@ The video script may sound like Kyler talking.
 - Prefer “[Surname] argues / proposes / examines / outlines / compares” over
   “the paper shows” or “we learn that.” Match the verb to what the article does.
 - Keep the author’s tentativeness when the article is tentative (*may*, *suggests*,
-  *reconstructs*). Do not harden a speculative claim into fact.
+  *possibly*, *reconstructs*). Do not harden a speculative claim into fact, and
+  do not weaken a direct claim into a hedge. If the author writes that a
+  pattern “may extend… and possibly beyond,” do not write that it “doesn’t
+  appear to be repeated.”
+- Attribute the claim to the specific scholar and the specific model or
+  structure the article names. If the article says it of the five-part chiasm,
+  do not say it of Reynolds’s model, and do not say the author said it of both.
+  If the article names one scholar, name that scholar. Do not write “some scholars.”
+- Copy direct quotations verbatim, including verb endings (*mislocates*, not
+  *mislocate*). Do not tidy the author’s wording inside quotation marks.
+- Use an en dash in numeric and verse ranges (`1 Nephi 1:4–7`), not a hyphen,
+  and do not mix the two in the same draft.
+- Use curly apostrophes in contractions and possessives (`Nephi’s`, `I’ll`),
+  not straight apostrophes.
 - Intellectually serious: names, Hebrew/Greek/Egyptian roots, dates, and sources
   stay in when they matter, with a one-clause gloss.
 - Written sections are plain and factual, and they should sound like Kyler
@@ -209,8 +222,10 @@ Z”) unless you are quoting.
    the Summary. Do not add a Reflection after it. Do not stop the Summary before
    that block.
 
-   Length is counted **before** the closing quote. Locator text
-   `(link to "…"; page N)` is not counted. The band scales with the article.
+   Length is counted **before** the closing quote. Locator parentheticals
+   `(link to "…"; page N)` are not counted, and neither are the bracketed
+   labels in front of them. The band scales with the article. Keep that
+   page-scaled range; do not aim at a different fixed band.
    Short summaries of long articles are the exception.
 
    | Pages | Summary, before the closing quote | Soft max |

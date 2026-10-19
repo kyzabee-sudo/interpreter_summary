@@ -63,6 +63,13 @@ def test_system_prompt_requires_current_format():
     assert "delve" in lowered
     assert "chatbot" in lowered
     assert "boilerplate" in lowered
+    assert "mislocates" in lowered
+    assert "en dash" in lowered
+    assert "curly" in lowered
+    assert "some scholars" in lowered
+    assert "hedging" in lowered
+    assert "five-part chiasm" in lowered
+    assert "locator parentheticals" in lowered
 
 
 def test_style_guide_teaches_current_voice():
@@ -98,6 +105,10 @@ def test_style_guide_teaches_current_voice():
     assert "Title page" in guide
     assert "Bold it." not in guide
     assert "Never bold bracketed words" in guide
+    assert "mislocates" in lowered
+    assert "en dash" in lowered
+    assert "some scholars" in lowered
+    assert "parenthetical" in lowered
 
 
 def test_user_prompt_includes_style_and_asks_for_video_script():
@@ -154,6 +165,8 @@ def test_summary_word_targets_scale_with_pages_and_tighten_on_body_words():
     assert "length-note" in hint
     assert "Squire" in hint
     assert "see you next time" in hint
+    assert "parenthetical" in hint
+    assert "en dash" in hint
     assert "no preamble" in hint
     assert "Do not write a Reflection" in hint
     note = summary_length_note(849, 16)
@@ -502,6 +515,20 @@ As he concludes (link to “The Book of Mormon does not”; page 449):
     assert "No such paragraph exists here" not in report.markdown
     assert "A fake claim appears." in report.markdown
     assert locator_count(report.markdown) == 3
+
+
+def test_dropped_locator_spacing_keeps_a_dropped_initial():
+    corpus = _corpus_from_pages({1: "The present article continues an earlier study."})
+    markdown = (
+        'A fake claim appears  (link to "No such paragraph exists here"; page 440). '
+        "The next sentence stays.\n"
+        "In this article, from . Robb Smith reads the opening.\n"
+    )
+    report = verify_locators(markdown, corpus)
+    assert report.dropped == 1
+    assert "A fake claim appears. The next sentence stays." in report.markdown
+    assert "from . Robb Smith" in report.markdown
+    assert "from. Robb" not in report.markdown
 
 
 def test_verify_locators_corrects_a_label_woven_into_the_sentence():

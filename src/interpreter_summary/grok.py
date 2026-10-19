@@ -69,14 +69,66 @@ class GrokClient:
 
         The PDF stays an attached file. xAI turns that attachment into document
         search on its own; there is no documented switch to turn those searches
-        off without dropping the file.
+        off without dropping the file. The check and revision calls do not use
+        this method.
         """
+        return await self._collect_stream(
+            file_id,
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+            empty_message="Grok returned an empty summary.",
+        )
+
+    async def complete_text(
+        self,
+        *,
+        system_prompt: str,
+        user_prompt: str,
+        reasoning_effort: str | None = "low",
+    ) -> str:
+        """Stream a text-only call. The PDF is not attached.
+
+        Attaching the file makes xAI search it again, which is the slow and
+        costly part the draft call already paid for. Reasoning effort defaults
+        to low so the check does not run at the draft's high effort. The same
+        long read timeout applies between streamed chunks.
+        """
+        try:
+            return await self._collect_stream(
+                None,
+                system_prompt=system_prompt,
+                user_prompt=user_prompt,
+                reasoning_effort=reasoning_effort,
+                empty_message="Grok returned an empty response.",
+            )
+        except GrokError as exc:
+            if reasoning_effort and _reasoning_rejected(exc):
+                return await self._collect_stream(
+                    None,
+                    system_prompt=system_prompt,
+                    user_prompt=user_prompt,
+                    reasoning_effort=None,
+                    empty_message="Grok returned an empty response.",
+                )
+            raise
+
+    async def _collect_stream(
+        self,
+        file_id: str | None,
+        *,
+        system_prompt: str,
+        user_prompt: str,
+        reasoning_effort: str | None = None,
+        empty_message: str,
+    ) -> str:
         deltas: list[str] = []
         fallback = ""
         async for event in self._iter_response_events(
             file_id,
             system_prompt=system_prompt,
             user_prompt=user_prompt,
+            reasoning_effort=reasoning_effort,
+            action="check" if file_id is None else "summarize",
         ):
             kind, text = _interpret_stream_event(event)
             if kind == "delta" and text:
@@ -85,7 +137,7 @@ class GrokClient:
                 fallback = text
         text = "".join(deltas).strip() or fallback.strip()
         if not text:
-            raise GrokError("Grok returned an empty summary.")
+            raise GrokError(empty_message)
         return text if text.endswith("\n") else text + "\n"
 
     async def summarize_file_stream(
@@ -106,10 +158,12 @@ class GrokClient:
 
     async def _iter_response_events(
         self,
-        file_id: str,
+        file_id: str | None,
         *,
         system_prompt: str,
         user_prompt: str,
+        reasoning_effort: str | None = None,
+        action: str = "summarize",
     ) -> AsyncIterator[dict[str, Any]]:
         async with self._client.stream(
             "POST",
@@ -120,12 +174,13 @@ class GrokClient:
                 user_prompt=user_prompt,
                 file_id=file_id,
                 stream=True,
+                reasoning_effort=reasoning_effort,
             ),
             headers={"Content-Type": "application/json"},
         ) as response:
             if response.status_code >= 400:
                 body = (await response.aread()).decode("utf-8", errors="replace")
-                raise GrokError(_format_api_error(response.status_code, body, "summarize"))
+                raise GrokError(_format_api_error(response.status_code, body, action))
             async for line in response.aiter_lines():
                 if not line.startswith("data:"):
                     continue
@@ -145,24 +200,35 @@ def _responses_payload(
     model: str,
     system_prompt: str,
     user_prompt: str,
-    file_id: str,
+    file_id: str | None,
     stream: bool,
+    reasoning_effort: str | None = None,
 ) -> dict[str, Any]:
-    return {
+    if file_id:
+        user_content: str | list[dict[str, str]] = [
+            {"type": "input_text", "text": user_prompt},
+            {"type": "input_file", "file_id": file_id},
+        ]
+    else:
+        # Text only. Omitting the file keeps xAI from searching the PDF again.
+        user_content = user_prompt
+    payload: dict[str, Any] = {
         "model": model,
         "stream": stream,
         "store": False,
         "input": [
             {"role": "system", "content": system_prompt},
-            {
-                "role": "user",
-                "content": [
-                    {"type": "input_text", "text": user_prompt},
-                    {"type": "input_file", "file_id": file_id},
-                ],
-            },
+            {"role": "user", "content": user_content},
         ],
     }
+    if reasoning_effort:
+        payload["reasoning"] = {"effort": reasoning_effort}
+    return payload
+
+
+def _reasoning_rejected(exc: GrokError) -> bool:
+    message = str(exc).lower()
+    return "reasoning" in message and any(code in message for code in ("400", "422"))
 
 
 def extract_output_text(payload: dict[str, Any]) -> str:

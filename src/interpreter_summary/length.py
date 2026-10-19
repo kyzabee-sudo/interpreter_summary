@@ -157,9 +157,16 @@ def _closing_quote_span(lines: list[str]) -> tuple[int | None, int | None]:
 
 
 def count_words(text: str) -> int:
+    """Count words, excluding locator parentheticals and their bracketed labels.
+
+    A locator parenthetical is ``(link to "..."; page N)``. The ``[label]``
+    in front of it is excluded too, which is how Takeaway and Summary length
+    have been counted. Curly and straight apostrophes stay inside the word,
+    so ``Nephi’s`` and ``I'll`` each count as one.
+    """
     cleaned = re.sub(r"\(link to [^)]+\)", "", text)
     cleaned = re.sub(r"\[[^\]]+\]\s*", "", cleaned)
-    return len(re.findall(r"[A-Za-z0-9']+", cleaned))
+    return len(re.findall(r"[A-Za-z0-9'’]+", cleaned))
 
 
 def question_count(qa_markdown: str) -> int:
@@ -272,7 +279,9 @@ def length_hint(
     return (
         f"This article is {article_pages} PDF pages{span}.{body_bit} "
         f"Follow this Summary band by default: {target.describe()}, "
-        "counted before the closing block quote and not counting locator text. "
+        "counted before the closing block quote and not counting locator "
+        "parentheticals (link to …; page N) or the bracketed labels in front of them. "
+        "Do not aim at a different fixed range. "
         "Short summaries of long articles are the exception. "
         "Go below the band only for a close reading of a single passage, a "
         "literary-structure or wordplay study, or an article that makes few "
@@ -290,6 +299,10 @@ def length_hint(
         "End the Summary with As [Surname] concludes (link to \"opening words\"; page N): "
         "and a verbatim block quote. "
         "Mention an appendix in one sentence if it matters; do not summarize it. "
+        "Attribute each claim to the scholar and the model the article names. "
+        "Match the author’s hedging, and copy every quotation verbatim. "
+        "Use an en dash in numeric and verse ranges, and curly apostrophes in "
+        "contractions and possessives. "
         "Video script: about 10 rows (9–12). Row 1 is a conversational hook about a person or detail. "
         "Each narration is one to three spoken sentences. "
         'The last row ends with "and I\'ll see you next time." '

@@ -26,6 +26,14 @@ def main(argv: list[str] | None = None) -> None:
     summarize.add_argument("--docx", type=Path, help="Also write a Word document to this path")
     summarize.add_argument("--style", type=Path, help="Optional style .docx or .md override")
     summarize.add_argument("--notes", help="Extra instructions for this run")
+    summarize.add_argument(
+        "--no-verify",
+        action="store_true",
+        help=(
+            "Skip the model accuracy review and the one revision pass. "
+            "Deterministic checks still run offline."
+        ),
+    )
 
     serve = sub.add_parser("serve", help="Start the local web app")
     serve.add_argument("--host", default=None)
@@ -63,6 +71,7 @@ def _summarize(args: argparse.Namespace) -> None:
             style_bytes=style_bytes,
             style_filename=style_filename,
             extra_instructions=args.notes,
+            model_verify=not args.no_verify,
         )
     )
     if args.output:
@@ -75,10 +84,23 @@ def _summarize(args: argparse.Namespace) -> None:
     if args.docx:
         args.docx.write_bytes(markdown_to_docx(result.markdown))
         print(f"Wrote {args.docx}")
+    report_path = _check_report_path(args.output, args.docx)
+    if report_path is not None:
+        report_path.write_text(result.check_report, encoding="utf-8")
+        print(f"Wrote {report_path}")
+    print(result.check_report, file=sys.stderr)
     print(
         f"{result.page_count} PDF pages · {result.verify_summary_line()} · {result.model}",
         file=sys.stderr,
     )
+
+
+def _check_report_path(markdown_path: Path | None, docx_path: Path | None) -> Path | None:
+    """Sibling ``*.check.md``. Prefer the Markdown output when both are set."""
+    anchor = markdown_path or docx_path
+    if anchor is None:
+        return None
+    return anchor.with_name(f"{anchor.stem}.check.md")
 
 
 def _serve(args: argparse.Namespace) -> None:

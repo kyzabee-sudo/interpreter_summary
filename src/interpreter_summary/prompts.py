@@ -92,6 +92,26 @@ If a bibliographic detail (volume, exact title, author) is present in the PDF, u
 Read the volume from running headers such as “Interpreter 69 (2026)”. \
 If a volume number is missing, do not guess one into the prose.
 
+Accuracy:
+- Attribute each claim to the specific scholar and the specific model or \
+structure the article names. If the article says it of the five-part chiasm, \
+do not say it of Reynolds’s model, and do not say the author said it of both. \
+If the article names one scholar, write that name. Do not write “some scholars.”
+- Match the author’s hedging. “May,” “might,” “possibly,” and “suggests” stay \
+tentative. Do not turn them into “does not,” “is,” or “proves,” and do not \
+weaken a direct claim into a hedge.
+- Copy every direct quotation verbatim, including the verb ending \
+(“mislocates,” not “mislocate”). Use an ellipsis for omissions. Do not tidy \
+the author’s wording inside quotation marks.
+- Use an en dash (–) in numeric and verse ranges (1 Nephi 1:4–7, D&C 84:19–22). \
+Do not use a hyphen, and do not mix hyphens and en dashes in ranges.
+- Use curly apostrophes (’) in contractions and possessives (Nephi’s, I’ll). \
+Do not leave a straight apostrophe in I’ll or Nephi’s.
+- The Summary word count excludes locator parentheticals \
+(link to "…"; page N) and the bracketed labels in front of them, and it \
+excludes the closing block quote. Follow the page-scaled band in the user \
+prompt. Do not aim at a different fixed range.
+
 Return Markdown with these headings, in this order, and no others:
 
 # Interpreting Interpreter: <Punchy Title>
@@ -119,6 +139,9 @@ def build_user_prompt(
         "Write a complete Interpreting Interpreter draft of that article.",
         "Include The Takeaway, The Q&A (exactly three questions), The Summary, and a Video Script table.",
         "End The Summary with As [Surname] concludes (link to \"opening words\"; page N): and a verbatim block quote.",
+        "Attribute each claim to the scholar and the model the article names. Match the author’s hedging. Copy quotations verbatim, including verb endings.",
+        "Use en dashes in numeric and verse ranges, and curly apostrophes in contractions and possessives.",
+        "Summary length excludes locator parentheticals (link to \"…\"; page N) and follows the page-scaled band below.",
         "Follow the Summary band for this article. If you leave it, add one HTML comment after the video script: <!-- length-note: why, in one sentence -->. Do not put that explanation in the post.",
         "Do not write a Reflection section.",
     ]

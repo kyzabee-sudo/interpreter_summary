@@ -22,10 +22,12 @@ Summary, and a video-script table. There is no Reflection section.
    200–330 words before the quote for a short article, up to about 450–750
    for a long one. A close reading of one passage may go shorter (Squire,
    Bowen); a list of many parallels may go longer (Ahlstrom). After
-   Grok drafts, locators and block quotes in the Summary and Q&A
-   are checked against the PDF text: wrong pages are corrected when the phrase
-   is unique, paraphrased quotes are repaired to the article wording when the
-   passage is clear, and unverifiable locators or quotes are dropped.
+Grok drafts, locators and block quotes in the Summary and Q&A
+are checked against the PDF text: wrong pages are corrected when the phrase
+is unique, paraphrased quotes are repaired to the article wording when the
+passage is clear, and unverifiable locators or quotes are dropped. A second
+pass then checks typos, verbatim quotations, journal-page locators, counts,
+and (unless `--no-verify`) claims against the article. See [Accuracy check](#accuracy-check).
 5. **Video Script** — a table of about 10 rows pairing spoken narration with a
    short image cue, ending `and I'll see you next time.`
 
@@ -74,6 +76,68 @@ Optional flags:
 
 - `--style path/to/style.docx` to replace the built-in house style
 - `--notes "emphasize the linguistic argument"` for a one-off instruction
+- `--no-verify` to skip the model accuracy review and the revision pass. The offline checks still run.
+
+## Accuracy check
+
+Before a draft is saved, the app checks it and writes a short **Check report**
+next to the output (`summary.check.md` when the post is `summary.md`). The
+report is also printed on stderr. It is not inserted into the Markdown post
+or the Word file.
+
+Two layers:
+
+1. **Offline checks** (no API call). For every locator, the quoted link phrase
+   must appear on the stated **journal** page. Hyphenation, line breaks, and
+   curly quotes are ignored when matching. A unique wrong page is corrected;
+   the report names the journal page where the phrase actually is. The offset
+   is derived from the PDF (journal page = PDF viewer page + offset). Direct
+   quotations must appear verbatim; a near miss such as “mislocate” for
+   “mislocates” is flagged with the article’s wording and page. The pass also
+   flags placeholder junk (`XXXXX`, empty brackets, `TODO`), double spaces,
+   leading or trailing spaces, doubled words, unbalanced quotes or parentheses,
+   hyphens in numeric ranges, a missing final period, straight apostrophes,
+   a dropped initial (`from . Robb Smith`), Takeaway length (20–35 words),
+   Summary length on the existing page-scaled band (**not** a flat 250–400),
+   a video table that is not about 10 complete rows, and a last row that does
+   not end `and I'll see you next time.`
+2. **One model review**, using the same xAI client and model. The article is
+   sent as text with journal page markers. The PDF is not attached again, so
+   xAI does not search the file a second time, and the call uses reasoning
+   effort `low` (the draft call stays on the model’s default). The review
+   looks for wrong attributions, hedging that is stronger or weaker than the
+   author’s, quote and verse errors, counts and names, Q&A answers that
+   contradict the article, script lines that disagree with the draft, and
+   leftover typos. Findings are structured: location, problem, a quotation
+   from the article with its journal page, and a suggested fix.
+
+If either layer finds something to fix, the app makes **one** revision call
+under the same cheap rules (text only, low reasoning) and then re-runs the
+offline checks. The revision is told not to invent claims. Whatever is still
+unresolved stays in the Check report for Kyler. `--no-verify` skips both
+model calls.
+
+Summary length follows the bands already in the app (about 200–330 words
+before the closing quote for a short article, up to about 450–750 for a long
+one). The count excludes locator parentheticals `(link to "…"; page N)` and
+the bracketed labels in front of them. That counting rule is unchanged.
+
+**Added cost.** At the published grok-4.6 rates ($2 per million input tokens
+and $6 per million output, below 200k prompt tokens), a typical article plus
+the draft is a few tens of thousands of tokens. The review is usually on the
+order of **$0.05–$0.20**. A revision, only when something needs fixing, is
+about the same again, so a run that rewrites once is about **$0.10–$0.40**
+on top of the draft. The draft call is unchanged and is still the larger
+share, because it attaches the PDF and uses default (high) reasoning. The
+article extract is capped so the check stays under the doubled long-context
+rate.
+
+**Limits.** The offline locator check can confirm that a phrase is on the
+stated page; it cannot tell that a different phrase on another page is the
+one that supports the claim. Hedging and attribution are model judgments, and
+they are not reviewed a second time after the revision. A badly altered quote
+can be flagged without a usable article excerpt. Justified departures from
+the Summary band stay a heads-up rather than a forced rewrite.
 
 ## Tests
 

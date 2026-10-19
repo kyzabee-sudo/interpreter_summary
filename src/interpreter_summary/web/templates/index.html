@@ -52,6 +52,11 @@
           </label>
         </details>
 
+        <label class="check-option">
+          <input id="verify-input" type="checkbox" checked />
+          Run the model accuracy check before saving (one extra Grok call; uncheck to skip it)
+        </label>
+
         <div class="actions">
           <button type="submit" id="submit-btn" {% if not has_api_key %}disabled{% endif %}>
             Draft summary
@@ -68,9 +73,11 @@
             <button type="button" id="copy-btn">Copy Markdown</button>
             <button type="button" id="md-btn">Download .md</button>
             <button type="button" id="docx-btn">Download .docx</button>
+            <button type="button" id="check-btn">Download check report</button>
           </div>
         </div>
         <article id="result-html" class="article"></article>
+        <pre id="check-report" class="check-report" hidden></pre>
       </section>
     </main>
 

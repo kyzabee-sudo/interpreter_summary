@@ -53,6 +53,7 @@ async def api_summarize(
     pdf: UploadFile = File(...),
     style: UploadFile | None = File(None),
     notes: str = Form(default=""),
+    verify: str = Form(default="1"),
 ) -> dict:
     settings = get_settings()
     pdf_bytes = await pdf.read()
@@ -66,6 +67,7 @@ async def api_summarize(
             style_bytes=style_bytes or None,
             style_filename=style_filename,
             extra_instructions=notes or None,
+            model_verify=verify.strip().lower() not in {"0", "false", "off", "no"},
         )
     except PdfError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
@@ -106,6 +108,11 @@ async def api_summarize(
         "video_row_count": result.video_row_count,
         "video_length_note": result.video_length_note,
         "model": result.model,
+        "check_report": result.check_report,
+        "model_review": result.model_review,
+        "revision": result.revision,
+        "checks_fixed": result.checks_fixed,
+        "checks_open": result.checks_open,
     }
 
 
