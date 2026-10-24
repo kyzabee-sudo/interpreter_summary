@@ -518,7 +518,7 @@ def video_findings(markdown: str) -> list[Finding]:
                 code="script-rows",
                 location="Video Script",
                 problem=f"Video script has {len(rows)} data rows; the target is 10 (acceptable 9–12).",
-                suggested_fix="Use about 10 complete rows. Do not repeat a point to fill a row.",
+                suggested_fix="Default to exactly 10 complete rows. Do not repeat a point to fill a row.",
             )
         )
     for index, row in enumerate(rows, start=1):
