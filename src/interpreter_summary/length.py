@@ -303,8 +303,9 @@ def length_hint(
         "Match the author’s hedging, and copy every quotation verbatim. "
         "Use an en dash in numeric and verse ranges, and curly apostrophes in "
         "contractions and possessives. "
-        "Video script: about 10 rows (9–12). Row 1 is a conversational hook about a person or detail. "
-        "Each narration is one to three spoken sentences. "
+        "Video script: about 10 rows (9–12). Default to exactly 10 rows unless the user asks otherwise. "
+        "Row 1 is a vivid scene; row 2 contrasts it with today. "
+        "Each narration is one or two full spoken sentences (about 20–45 words). "
         'The last row ends with "and I\'ll see you next time." '
         "Do not write a Reflection. Output only the post, with no preamble."
     )

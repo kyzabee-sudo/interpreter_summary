@@ -70,6 +70,18 @@ def test_system_prompt_requires_current_format():
     assert "hedging" in lowered
     assert "five-part chiasm" in lowered
     assert "locator parentheticals" in lowered
+    assert "exactly 10 rows" in lowered
+    assert "9–12" in SYSTEM_PROMPT or "9-12" in SYSTEM_PROMPT
+    assert "quoted catchphrase" in lowered
+    assert "curious-reader" in lowered
+    assert "link to author page" in lowered
+    assert "do not invent a url" in lowered
+    assert "month d, yyyy" in lowered
+    assert "same covenant" in lowered
+    assert "descriptive title" in lowered
+    assert "punchy title" not in lowered
+    assert "clipped fragments" in lowered
+    assert "page-scaled band" in lowered
 
 
 def test_style_guide_teaches_current_voice():
@@ -109,6 +121,18 @@ def test_style_guide_teaches_current_voice():
     assert "en dash" in lowered
     assert "some scholars" in lowered
     assert "parenthetical" in lowered
+    assert "exactly 10 rows" in lowered
+    assert "9–12" in guide or "9-12" in guide
+    assert "quoted catchphrase" in lowered
+    assert "curious-reader" in lowered
+    assert "link to author page" in lowered
+    assert "do not invent a url" in lowered
+    assert "sealing unrelated individuals to church leaders" in lowered
+    assert "proxy work and adoption" in lowered
+    assert "same covenant" in lowered
+    assert "descriptive title" in lowered
+    assert "short punchy title" not in lowered
+    assert "200–330" in guide and "450–750" in guide
 
 
 def test_user_prompt_includes_style_and_asks_for_video_script():
@@ -165,6 +189,9 @@ def test_summary_word_targets_scale_with_pages_and_tighten_on_body_words():
     assert "length-note" in hint
     assert "Squire" in hint
     assert "see you next time" in hint
+    assert "exactly 10 rows" in hint
+    assert "20–35" in hint
+    assert "380–620" in hint
     assert "parenthetical" in hint
     assert "en dash" in hint
     assert "no preamble" in hint

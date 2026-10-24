@@ -34,8 +34,9 @@ Write the Takeaway, Q&A, and Summary as a careful reader briefing a smart friend
 The video script may sound like Kyler talking.
 
 - Sympathetic to the article, not a cheerleader and not a reviewer assigning a grade.
-- Prefer “[Surname] argues / proposes / examines / outlines / compares” over
-  “the paper shows” or “we learn that.” Match the verb to what the article does.
+- Prefer “[Surname] notes / points out / suggests / proposes / examines /
+  outlines / compares” over “the paper shows” or “we learn that.” Use “argues”
+  for the thesis. Match the verb to the author’s force.
 - Keep the author’s tentativeness when the article is tentative (*may*, *suggests*,
   *possibly*, *reconstructs*). Do not harden a speculative claim into fact, and
   do not weaken a direct claim into a hedge. If the author writes that a
@@ -93,8 +94,9 @@ Do not:
 - “What I find most compelling is the way the author meticulously unpacks…”
 
 The first Summary paragraph must not restate the Takeaway in fancier words.
-Open with `In this article, [Full Name]…` and go straight to the problem and
-the first move in the argument.
+Open with `In this article, [Full Name] (link to author page) …` and go straight
+to what the article does and does not cover, why it matters now, and the first
+move in the argument. Do not invent a URL.
 
 Short words beat long ones: *use* not *utilize*, *before* not *prior to*,
 *to* not *in order to*, *later* not *subsequently*, *may* not *potentially
@@ -123,11 +125,12 @@ Z”) unless you are quoting.
 ## Output structure (in this order)
 
 1. **Title line**
-   `Interpreting Interpreter: [Short Punchy Title]`
-   Compact, concrete, a little wry. Name the surprising object or claim, not the
-   method.    Good: *Rocks and Hats*, *Debilitated by Chocolate*, *Apostolic Scientists*,
-   *Melchizedek-Related Parallels*.
-   Worse: *A Historiographical Review of Translation Accounts*.
+   `Interpreting Interpreter: [Clear, descriptive title naming the topic; avoid pulled quotes]`
+   Name the topic in plain words. Do not build the title from a pulled quote
+   or a catchphrase. Compact and concrete is still right; a method essay is not.
+   Good: *Rearranging Temple Ordinances*, *Rocks and Hats*, *Debilitated by Chocolate*,
+   *Apostolic Scientists*, *Melchizedek-Related Parallels*.
+   Worse: *Not Arranged Right*, *A Historiographical Review of Translation Accounts*.
    In the Word file, *Interpreter* is italic and the whole title is bold 16 pt.
 
 2. **The Takeaway**
@@ -136,7 +139,9 @@ Z”) unless you are quoting.
    concrete detail**, not a teaser. No “this article discusses.”
 
    Write it in Kyler’s words. Do not hand back a light rewrite of the article’s
-   abstract.
+   abstract. State the article’s thesis in plain words. Do not build the
+   Takeaway around a quoted catchphrase, and do not narrow it to one era or
+   leader unless the article does.
 
    Shape (Ahlstrom sits in this band):
 
@@ -154,9 +159,13 @@ Z”) unless you are quoting.
    carry the bones of the article, not a second outline of the Summary.
 
    Question 1 asks about the article’s main claim, thesis, or proposed
-   structure (“What structure does he propose?”). Questions 2 and 3 cover how
-   that claim is supported or evaluated, plus one notable implication or
-   detail. Prefer the article’s big questions over a narrow side detail.
+   structure (“What structure does he propose?”). Questions 2 and 3 are plain,
+   curious-reader questions about what the article covers (“What types of …
+   has he found?”, “In what way can … be seen as …?”), not debate-style
+   questions about how he supports his claim. Use reporting verbs that match
+   the author’s force (“notes”, “points out”, “suggests”; “argues” only for
+   his thesis). Report; do not add your own summarizing gloss at the end of
+   an answer. Prefer the article’s big questions over a narrow side detail.
    Ask them the way a curious reader would (*What*, *How*, *Does*, *Did*,
    *Why*, *Were*, *Could*). Do not open on a minor object, and do not paste
    the Takeaway back as the first answer.
@@ -169,20 +178,35 @@ Z”) unless you are quoting.
 
    - Question 1: “What structure does he propose?” or “Were these apostles able
      to hold science and religion together?” Name the claim, not a side object.
-   - Question 2: how the claim is supported. Clark’s answer can be a direct
-     “Yes.” and the difference between Talmage’s lectures and Widtsoe and
-     Merrill’s reluctance.
-   - Question 3: one implication or check. Ahlstrom asks whether Joseph could
-     have gotten those details from the Bible or other texts available in the
-     early 1800s, then says which texts were in reach and which were not.
+   - Question 2: a plain question about what the article covers (“What types of
+     adjustments has he found?”). Clark can answer with the difference between
+     Talmage’s lectures and Widtsoe and Merrill’s reluctance. “Notes” or
+     “points out” fits unless this answer is the thesis.
+   - Question 3: another curious-reader question (“In what way can this be seen
+     as …?”). Ahlstrom asks whether Joseph could have gotten those details from
+     the Bible or other texts available in the early 1800s, then says which
+     texts were in reach and which were not. Stop when the point is reported.
+     Do not add a summarizing gloss.
 
    Q&A usually needs no locators. If a specific quotation needs a citation, use
    the same locator form as the Summary.
 
 4. **The Summary**
-   Third person. Plain and factual. Open with `In this article, [Full Name]…`
-   (full name, not surname; do not invent a link on the name). Walk the argument
-   **in order**. Explain technical terms in passing.
+   Third person. Plain and factual. Open with `In this article, [Full Name] (link to author page) …`
+   (full name, not surname). Do not invent a URL. Walk the argument
+   **in order**. Write in connected, flowing sentences with transitions
+   (“With these adjustments…”, “That consistency has been reiterated by…”).
+   Do not use clipped fragments or semicolon lists. Early on, say what the
+   article does and does not cover, and why the topic matters now. Prefer the
+   main arc and vivid concrete details over exact days, scripture references,
+   and secondary scholars. Briefly explain unfamiliar terms in plain words.
+   Put locators on the people, places, and events you name, not only on
+   quotations. Write dates as Month D, YYYY (May 4, 1842, not 4 May 1842).
+
+   Worked example of a lay-reader gloss (Marshall). The bracketed label names
+   the topic, and the sentence explains the unfamiliar term before the date:
+
+   `[Proxy work and adoption] (link to "opening words"; page N). He explains the earlier “adoption” practice—sealing unrelated individuals to Church leaders—in 1894.`
 
    Weave each locator into the sentence as the linked words. Do not tack a
    label onto the end:
@@ -261,29 +285,37 @@ Z”) unless you are quoting.
    tables of sources.
 
 5. **Video Script**
-   A Markdown table of about 10 data rows (9–12 is acceptable). Header row:
+   A Markdown table of about 10 data rows (9–12 is acceptable). Default to
+   exactly 10 rows unless the user asks otherwise. Header row:
 
    `| # | Text | Image |`
 
-   - **Text** is narration Kyler can say on camera. One to three sentences,
-     about 15–45 words. Contractions. Concrete. An occasional “I” is right
-     here (“the scientist in me”, “I was a bit floored”) and wrong in the Summary.
+   - **Text** is narration Kyler can say on camera. One or two full spoken
+     sentences, about 20–45 words. Do not use fragment punchlines (“Same
+     covenant.”). Contractions. Concrete. Speak to Latter-day Saint viewers
+     warmly (“we”). An occasional “I” is right here (“the scientist in me”,
+     “I was a bit floored”) and wrong in the Summary. Avoid sensational or
+     edgy wording about sacred topics.
    - **Image** is a short cue for the person who will drop in a picture.
      A few words: `Title page`, `Talmage in his lab`, `Giant crystals`,
      `Priestly garments`. Not a paragraph, not a caption, and
      not an image-generation prompt. Two pictures may be separated by a period.
    - Do not put page locators or Markdown block quotes in cells. A shortened
      closing line may sit in the narration after “as he concludes:”.
-   - Shape: row 1 opens with a conversational hook about a person or a concrete
-     detail. Clark can open on the scientist-apostle (“James Talmage kept a
-     laboratory and an apostleship…”). The worked example below opens “The
-     clerk who wrote Fragment W is one of the more careful people…”. No
-     “welcome back”, and no table-of-contents sentence. Do not spend a later
-     row repeating a point an earlier row already made.
-     By row 2 or 3, name the author and the claim; the image cue there is often
-     `Title page`. Middle rows walk two or three vivid details in order, one
-     idea per row. The penultimate row may carry a short personal reaction or
-     the closing quotation. The last row is the sign-off.
+   - Shape: tell it as a story. Row 1 is a vivid scene, a conversational hook
+     about a person or a concrete detail. Clark can open on the scientist-apostle
+     (“James Talmage kept a laboratory and an apostleship…”). The worked example
+     below opens “The clerk who wrote Fragment W is one of the more careful
+     people…”. No “welcome back”, and no table-of-contents sentence. Row 2
+     contrasts that scene with today. Name the author and the article’s scope
+     by row 3–4; the image cue there is often `Title page`. Then say why it
+     matters now, walk the history and examples in order, and end on what it
+     means for the viewer before the sign-off. Each row is one or two full
+     spoken sentences (about 20–45 words). Do not use fragment punchlines
+     (“Same covenant.”). Speak to Latter-day Saint viewers warmly (“we”).
+     Avoid sensational or edgy wording about sacred topics. Every row has an
+     Image cue. Do not spend a later row repeating a point an earlier row
+     already made. The last row is the sign-off.
    - Last row Text, this shape: `Check out the full article, [Article Title], and I'll see you next time.`
      “Take a look at the full article…” is also fine. The sentence must end
      with `and I'll see you next time.` Image cue: `Title page`.
@@ -325,7 +357,7 @@ omissions. Never paraphrase inside the quote.
 
 - A Reflection section, a grade, or “what I find most compelling” in the written sections
 - The boilerplate “This post is a summary of the article…” paragraph
-- An invented `(link to author page)` on the author’s name
+- An invented URL on the author’s name. Use the placeholder `(link to author page)` in the Summary opening, and do not fill in an address.
 - YouTube description, hashtags, “like and subscribe”, “a video introduction is now available”
 - A “further reading” dump or bibliography
 - Author biography or acknowledgements from the PDF’s last page
@@ -361,7 +393,7 @@ A table of Late Bronze Age treaty deposits shows metal tokens paired with oath w
 
 ## The Summary
 
-In this article, A. Sample Scholar revisits Fragment W. After [reading the list] (link to "The warehouse fragment"; page 1) of ten ingots of bright copper that sit immediately after an oath formula, he rejects the inventory reading. He then walks through [three features] (link to "Three features"; page 2) of the surrounding clauses:
+In this article, [A. Sample Scholar] (link to author page) revisits Fragment W. After [reading the list] (link to "The warehouse fragment"; page 1) of ten ingots of bright copper that sit immediately after an oath formula, he rejects the inventory reading. He then walks through [three features] (link to "Three features"; page 2) of the surrounding clauses:
 
 * [The verb] (link to "Three features"; page 2). The word translated "weigh" regularly means "confirm" when the object is a promise rather than a commodity.
 * [The adjective] (link to "Three features"; page 2). "Bright" clusters with words for holiness, not with words for ore.
@@ -393,10 +425,10 @@ As Scholar concludes (link to "although copper can be cargo"; page 3):
 
 Use these for rhythm, not as text to copy onto a different article.
 
-Summary opening and bullets (a literary-structure article): the opening names the full author and keeps going in a warm sentence. Locators are woven in: `After [briefly summarizing] (link to "opening words"; page N) the chapter, he outlines a [six-element chiasm] (link to "opening words"; page N)`. Bullets may still start with a bracketed label for each pair. Do not bold that label. Each bullet says what the pair shows. One short quoted phrase is enough; do not list every sub-element. A criteria paragraph follows. The Summary must close `As [Surname] concludes (link to "opening words"; page N):` and a verbatim block quote.
+Summary opening and bullets (a literary-structure article): the opening names the full author with `[Full Name] (link to author page)` and keeps going in a warm, connected sentence. Do not invent a URL. Locators sit on the people, places, and events named, not only on quotations: `After [briefly summarizing] (link to "opening words"; page N) the chapter, he outlines a [six-element chiasm] (link to "opening words"; page N)`. Bullets may still start with a bracketed label for each pair. Do not bold that label. Each bullet says what the pair shows. One short quoted phrase is enough; do not list every sub-element. A criteria paragraph follows. The Summary must close `As [Surname] concludes (link to "opening words"; page N):` and a verbatim block quote. Briefly gloss an unfamiliar term the way Marshall does: `[Proxy work and adoption] (link to "opening words"; page N). He explains the earlier “adoption” practice—sealing unrelated individuals to Church leaders—in 1894.`
 
 Summary bullets (Clark): `In this article, David L. Clark summarizes the lives of three… These include:` then one long bullet each for James E. Talmage, John A. Widtsoe, and Joseph F. Merrill, birth through apostolic career, with locators on the load-bearing moments (the call, the mentor, the radio series). Close: `As [Clark concludes] (link to "A different category"; page 64):` and a quote on their publication record.
 
 Summary bullets (Ahlstrom): one bullet per parallel (“righteous in his youth”, “led people to repentance”, “uniquely great high priest”, and so on), each pairing a Restoration detail with the extra-biblical text that echoes it. Close on what Joseph could not have had in front of him.
 
-Video voice: row 1 is a conversational hook about a person or detail. Clark can open on the scientist-apostle (“James Talmage kept a laboratory and an apostleship…”). Ahlstrom can open on extra-biblical Melchizedek. The worked example opens “The clerk who wrote Fragment W is one of the more careful people…”. Name the author within a few rows, spend each middle row on a new detail, and do not repeat a point you already made. Land on `and I'll see you next time.` Image cues stay short: `Title page`, `Scopes trial`, `Priestly garments.`
+Video voice: default to exactly 10 rows. Tell it as a story. Row 1 is a vivid scene, a conversational hook about a person or detail. Clark can open on the scientist-apostle (“James Talmage kept a laboratory and an apostleship…”). Ahlstrom can open on extra-biblical Melchizedek. The worked example opens “The clerk who wrote Fragment W is one of the more careful people…”. Row 2 contrasts that scene with today. Name the author and the article’s scope by row 3–4. Then say why it matters now, walk the history and examples in order, and end on what it means for the viewer before the sign-off. Each row is one or two full spoken sentences (about 20–45 words). Speak warmly to Latter-day Saint viewers (“we”). Do not use fragment punchlines, and do not repeat a point you already made. Every row has an image cue. Land on `and I'll see you next time.` Image cues stay short: `Title page`, `Scopes trial`, `Priestly garments.`
