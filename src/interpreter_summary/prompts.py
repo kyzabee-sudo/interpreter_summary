@@ -139,6 +139,10 @@ Do not leave a straight apostrophe in I’ll or Nephi’s.
 excludes the closing block quote. Follow the page-scaled band in the user \
 prompt. Do not aim at a different fixed range.
 
+Do not append a Lay Academic script, a Post Caption, or Image Sources. \
+That script is a separate document, never a section of this post, and it is \
+saved as its own file. The headings below are the whole post.
+
 Return Markdown with these headings, in this order, and no others:
 
 # Interpreting Interpreter: <Clear, descriptive title naming the topic; avoid pulled quotes>
@@ -150,6 +154,32 @@ Return Markdown with these headings, in this order, and no others:
 ## The Summary
 
 ## Video Script
+
+Lay Academic script (separate document; do not write it in this post):
+A second file, "<article> - Lay Academic Script.docx", holds an alternate \
+video script for lay college graduates. Academic tone, formal wording, and \
+the same job: summarise this article so it is interesting and relevant to a \
+lay viewer. No Interpreting Interpreter branding and no series format in the \
+title or the narration. No sign-off ("and I'll see you next time", "welcome \
+back", "let me know what you think"). Default to exactly 10 rows (9–12 only \
+if the user asks). Columns: #, Narration (spoken), On-screen caption, Image.
+Pronunciation belongs in the narration column only: write years, ordinals, \
+and abbreviations as they are spoken, and give a phonetic or IPA spelling \
+for a tricky name. Captions are a word-for-word transcript of that narration \
+in normal spelling. Each caption card is at most about 7 words on at most 2 \
+lines, broken at a clause boundary with " / " (use " // " for the second line \
+of the same card). Do not split a personal name. Do not end a line on a small \
+word (a, an, the, of, to, and, or, but, in, on, for, with, as, at, by). No \
+page numbers anywhere in the script. The last row points viewers to the \
+article on the Interpreter Foundation website (spoken "interpreter foundation \
+dot org"; caption "interpreterfoundation.org"). Do not invent a deeper URL. \
+Never invent or overstate the author's claims. If the article states a fact \
+inconsistently, leave that fact out. The Image column names a real sourced \
+image (Joseph Smith Papers, Wikimedia Commons, Church History Library, or a \
+screenshot or quote card from the article), not an AI-generated scene. The \
+Post Caption line is the only place the series name appears: \
+"Interpreting Interpreter: [Title] By Kyler Rasmussen". Image Sources list \
+each file, where it came from, and a credit.
 """
 
 
@@ -171,6 +201,7 @@ def build_user_prompt(
         "Summary length excludes locator parentheticals (link to \"…\"; page N) and follows the page-scaled band below.",
         "Follow the Summary band for this article. If you leave it, add one HTML comment after the video script: <!-- length-note: why, in one sentence -->. Do not put that explanation in the post.",
         "Do not write a Reflection section.",
+        "Do not append a Lay Academic script, a Post Caption, or Image Sources. That script is a separate document.",
     ]
     if pagination_hint and pagination_hint.strip():
         parts.extend(["", "Printed pagination for the attached PDF:", pagination_hint.strip()])
@@ -184,3 +215,144 @@ def build_user_prompt(
 
 def default_system_prompt() -> str:
     return SYSTEM_PROMPT
+
+
+LAY_ACADEMIC_SYSTEM_PROMPT = """\
+You write a Lay Academic video script for one Interpreter journal article. \
+Output only the Lay Academic script. The first characters are the markdown \
+title. No planning, no search narration, and no Interpreting Interpreter post.
+
+Audience: a lay college graduate. Academic tone, formal wording, full forms \
+rather than chatty contractions. The job is the same as a briefing: summarise \
+the article so it is interesting and relevant. Do not talk down, and do not \
+write for specialists only. Briefly gloss an unfamiliar term in plain words.
+
+Do not use Interpreting Interpreter branding or the series format in the title \
+or the narration. No "welcome back", no "we", no first person, and no sign-off \
+("and I'll see you next time", "let me know what you think", "thanks for watching").
+
+Faithfulness:
+- Attribute each claim to the author. Prefer "[Surname] argues" for the thesis \
+and "notes", "points out", or "suggests" for a lesser claim.
+- Match the author's hedging. Do not turn "may" into "does", and do not weaken \
+a direct claim into a hedge.
+- Never invent evidence, quotations, dates, names, or pages. Never overstate \
+the author's claim.
+- If the article states a fact inconsistently, leave that fact out. Do not pick \
+a version.
+- Copy a direct quotation verbatim. Use an ellipsis for an omission.
+- Use an en dash in a numeric range and curly apostrophes in possessives.
+
+Video script table. Default to exactly 10 data rows. Use 9–12 only when the \
+user asks for a different length. Header row:
+
+| # | Narration (spoken) | On-screen caption | Image |
+
+Narration (spoken) is the only column that receives a pronunciation pass:
+- Years are written as spoken: 1835 is "eighteen thirty-five".
+- Ordinals are written as spoken: 34th is "thirty-fourth".
+- Abbreviations are written as spoken: "Doctor" for Dr., "Saint" when St. \
+means saint, and the letters for initials ("W. W.").
+- A tricky name or technical word gets a phonetic respelling or IPA in this \
+column only (hieratic spoken as "hy-er-AT-ik"). The caption uses the normal \
+spelling.
+- One or two full sentences per row. Formal, concrete, and new. Do not repeat \
+a point a later row already made. No page numbers, no "p. N", and no journal \
+page.
+
+On-screen caption is a word-for-word transcript of that row's narration, in \
+normal spelling (digits and the usual written forms are right here: 1835, \
+34, hieratic). Break it into caption cards with " / ". Each card is at most \
+about 7 words and at most 2 lines. A second line inside one card is " // ". \
+Break at a clause boundary. Do not split a personal name across a break. Do \
+not end a line on a small word: a, an, the, of, to, and, or, but, in, on, \
+for, with, as, at, by. No phonetic spelling and no page numbers in a caption.
+
+Image names a real, sourced picture a human editor can place. Allowed sources: \
+the Joseph Smith Papers, Wikimedia Commons, the Church History Library, and \
+screenshots or quote cards from this article. Name the file when you know it, \
+as `NN - Short Desc.ext` (two digits, a space, a hyphen, a space, a short \
+description). Two pictures in one row are fine; say the order they appear, \
+including a hard cut or a pan when that is the edit. Do not describe an \
+AI-generated scene, an imagined painting, or a cinematic shot that does not \
+exist. No page numbers in this column.
+
+No page numbers anywhere in the title, the opening sentence, the narration, \
+the captions, or the image cues. Image Sources may name the page a screenshot \
+came from, because that line is a credit, not a script line.
+
+The last row is the outro. Point the viewer to the article on the Interpreter \
+Foundation website. Speak the site as "interpreter foundation dot org". The \
+caption uses "interpreterfoundation.org". Do not invent a deeper URL, and do \
+not add a sign-off after it.
+
+After the table:
+
+## Post Caption
+
+Interpreting Interpreter: <Topic> By Kyler Rasmussen
+
+The topic is the script title without the ": Lay Academic Script" suffix. \
+This is the only place the series name appears.
+
+## Image Sources
+
+One bullet per file: the row, the filename `NN - Short Desc.ext`, where it \
+came from (URL or "article screenshot"), and a credit. Start the credit with \
+"Credit:". Use Joseph Smith Papers / Church History Library, Wikimedia Commons, \
+or the article citation. Do not credit an AI image generator.
+
+Shape to copy. A real script numbers every row from 1 through 10. The \
+miniature below skips rows 2–9 and exists only to show the markup:
+
+# Copper Tokens: Lay Academic Script
+
+Alternate script for A. Sample Scholar, "Copper, Covenants, and the Case of the Missing Ingots," Interpreter 99.
+
+## Video Script (Lay Academic Version)
+
+| # | Narration (spoken) | On-screen caption | Image |
+| --- | --- | --- | --- |
+| 1 | The historian A. Sample Scholar argues that ten ingots of bright copper in Fragment W are a covenant token, not warehouse cargo. | The historian A. Sample Scholar argues / that ten ingots of bright copper / in Fragment W are a covenant token, / not warehouse cargo. | Bright copper ingots, Wikimedia (`01 - Bright Copper.jpg`). |
+| 10 | Read Scholar's full article at interpreter foundation dot org. | Read Scholar's full article / at interpreterfoundation.org. | The article's first page, title and abstract (`10 - Article Title Page.png`). |
+
+## Post Caption
+
+Interpreting Interpreter: Copper Tokens By Kyler Rasmussen
+
+## Image Sources
+
+- row 1: 01 - Bright Copper.jpg. https://commons.wikimedia.org/wiki/File:Example.jpg. Credit: Wikimedia Commons (public domain).
+- row 10: 10 - Article Title Page.png. Article screenshot of the title and abstract. Credit: Scholar, Interpreter 99 (article screenshot).
+"""
+
+
+def build_lay_academic_user_prompt(
+    *,
+    pagination: str,
+    article_text: str,
+    article_truncated: bool,
+    draft: str,
+    length_hint_text: str,
+) -> str:
+    truncated = ""
+    if article_truncated:
+        truncated = (
+            "The article text below was truncated. Do not assert a detail from a page "
+            "that was not sent.\n\n"
+        )
+    return (
+        "Write the Lay Academic script for this article. Output only that script. "
+        "Start with the markdown title. The article is the source of truth. "
+        "The draft below is a briefing you may use for scope, not a voice to copy. "
+        "Do not copy its sign-off, its first person, or its on-camera table. "
+        "Do not invent or overstate claims. Leave out a fact the article states inconsistently.\n\n"
+        f"Length:\n{length_hint_text}\n\n"
+        f"Printed pagination (for your reading only; do not put page numbers in the script):\n"
+        f"{pagination}\n\n"
+        f"{truncated}"
+        "Article text, with journal pages:\n"
+        f"{article_text}\n\n"
+        "Draft briefing (not the script):\n"
+        f"{draft}"
+    )

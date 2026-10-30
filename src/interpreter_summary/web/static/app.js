@@ -12,12 +12,15 @@ const resultMeta = document.getElementById("result-meta");
 const copyBtn = document.getElementById("copy-btn");
 const mdBtn = document.getElementById("md-btn");
 const docxBtn = document.getElementById("docx-btn");
+const layDocxBtn = document.getElementById("lay-docx-btn");
 const checkBtn = document.getElementById("check-btn");
 const verifyInput = document.getElementById("verify-input");
 const checkReportEl = document.getElementById("check-report");
 
 let lastMarkdown = "";
 let lastCheckReport = "";
+let lastLayMarkdown = "";
+let lastLayFilename = "article - Lay Academic Script.docx";
 
 function setStatus(message, show = true) {
   statusEl.hidden = !show;
@@ -79,7 +82,10 @@ form.addEventListener("submit", async (event) => {
       throw new Error(payload.detail || "Summary failed.");
     }
     lastMarkdown = payload.markdown;
+    lastLayMarkdown = payload.lay_markdown || "";
+    lastLayFilename = payload.lay_filename || lastLayFilename;
     lastCheckReport = payload.check_report || "";
+    layDocxBtn.hidden = !lastLayMarkdown;
     resultHtml.innerHTML = payload.html;
     resultMeta.textContent = `${payload.page_count} PDF pages · ${payload.locator_summary} · ${payload.model}`;
     checkReportEl.textContent = lastCheckReport;
@@ -110,6 +116,24 @@ checkBtn.addEventListener("click", () => {
     new Blob([lastCheckReport], { type: "text/markdown" }),
     "interpreting-interpreter-summary.check.md",
   );
+});
+
+layDocxBtn.addEventListener("click", async () => {
+  if (!lastLayMarkdown) {
+    setStatus("No Lay Academic script was drafted.");
+    return;
+  }
+  const response = await fetch("/api/export/lay-docx", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ markdown: lastLayMarkdown, filename: lastLayFilename }),
+  });
+  if (!response.ok) {
+    setStatus("Could not export the Lay Academic script.");
+    return;
+  }
+  const blob = await response.blob();
+  downloadBlob(blob, lastLayFilename);
 });
 
 docxBtn.addEventListener("click", async () => {
