@@ -31,6 +31,61 @@ and (unless `--no-verify`) claims against the article. See [Accuracy check](#acc
 5. **Video Script** — a table of about 10 rows pairing spoken narration with a
    short image cue, ending `and I'll see you next time.`
 
+The Word file for that post (`VV_AA (MmmYY) Author.AI.docx`, or whatever path
+you pass to `--docx`) stays the main summary only. It does not gain a second
+script.
+
+## Lay Academic script
+
+A separate file, `<article> - Lay Academic Script.docx`, is written in the same
+folder. For `70_09 (Nov26) Gee.AI.docx` the script is
+`70_09 (Nov26) Gee - Lay Academic Script.docx`. The CLI writes it when you pass
+`-o` or `--docx`. The web app offers **Download lay script**.
+
+It is an alternate narration for a lay college graduate: academic tone, formal
+wording, ten rows by default. It does not use Interpreting Interpreter branding
+or the on-camera sign-off. The title is the topic plus `: Lay Academic Script`.
+The table has four columns: `#`, `Narration (spoken)`, `On-screen caption`,
+and `Image`. A **Post Caption** section reads
+`Interpreting Interpreter: [Title] By Kyler Rasmussen`. An **Image Sources**
+section lists each file and its credit.
+
+Narration is written as spoken (years, ordinals, abbreviations, and a phonetic
+or IPA spelling for a tricky name). Captions are a word-for-word transcript in
+normal spelling, at most about seven words on two lines, broken at a clause
+boundary. The script has no page numbers. The last row points viewers to the
+article at interpreterfoundation.org. Claims stay inside what the article
+says; a fact the article states inconsistently is left out. Image cues name
+real pictures from the Joseph Smith Papers, Wikimedia Commons, the Church
+History Library, or the article itself, not an AI-generated scene.
+
+The draft is one extra text call at low reasoning. The PDF is not attached
+again. If that call fails, the summary is still saved.
+
+### Video Images - AI
+
+Pictures for this version live in a `Video Images - AI` folder inside the
+article folder (the on-camera set stays in `Video Images`). Name each file
+`NN - Short Desc.ext`, with `NN` the row number (`01 - Grammar Page.jpg`).
+Put `Image Sources.csv` in that folder. It needs a `credit` column. The other
+columns are `file`, `description`, and `source`:
+
+```csv
+file,description,source,credit
+01 - Grammar Page.jpg,Grammar and Alphabet page,https://www.josephsmithpapers.org/...,The Joseph Smith Papers / Church History Library
+```
+
+`file` matches the image name. `credit` is the line a viewer or editor can
+attribute. The same credit belongs in the script’s Image Sources section.
+
+### Video
+
+This app does not render the video. After the script and the `Video Images - AI`
+folder are ready, render with the faceless-narrated-short-video skill. That
+render is separate from the summary. It includes two Media feedback passes:
+watch the cut, note what to change, revise, and watch again before the video
+is final.
+
 The built-in house style lives in
 `src/interpreter_summary/style_assets/style_guide.md`. A matching Word
 fixture is written to `samples/` when you generate samples. Word export follows

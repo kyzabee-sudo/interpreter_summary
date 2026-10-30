@@ -7,6 +7,7 @@ from pathlib import Path
 
 from interpreter_summary.config import get_settings
 from interpreter_summary.export import markdown_to_docx
+from interpreter_summary.lay_academic import lay_academic_docx_path, lay_academic_to_docx
 from interpreter_summary.samples import generate_samples
 from interpreter_summary.service import summarize_pdf
 
@@ -84,6 +85,7 @@ def _summarize(args: argparse.Namespace) -> None:
     if args.docx:
         args.docx.write_bytes(markdown_to_docx(result.markdown))
         print(f"Wrote {args.docx}")
+    _write_lay_script(args.output, args.docx, result.lay_markdown)
     report_path = _check_report_path(args.output, args.docx)
     if report_path is not None:
         report_path.write_text(result.check_report, encoding="utf-8")
@@ -93,6 +95,22 @@ def _summarize(args: argparse.Namespace) -> None:
         f"{result.page_count} PDF pages · {result.verify_summary_line()} · {result.model}",
         file=sys.stderr,
     )
+
+
+def _write_lay_script(markdown_path: Path | None, docx_path: Path | None, lay_markdown: str) -> None:
+    """Write ``<article> - Lay Academic Script.docx`` beside the summary.
+
+    The main ``.AI.docx`` is left as the summary only. An empty lay draft writes
+    nothing.
+    """
+    if not lay_markdown.strip():
+        return
+    anchor = docx_path or markdown_path
+    if anchor is None:
+        return
+    path = lay_academic_docx_path(anchor)
+    path.write_bytes(lay_academic_to_docx(lay_markdown))
+    print(f"Wrote {path}")
 
 
 def _check_report_path(markdown_path: Path | None, docx_path: Path | None) -> Path | None:

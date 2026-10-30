@@ -320,6 +320,57 @@ Z”) unless you are quoting.
      “Take a look at the full article…” is also fine. The sentence must end
      with `and I'll see you next time.` Image cue: `Title page`.
 
+## Lay Academic script (separate file)
+
+Do not write this script inside the post. It is a second document, saved as
+`<article> - Lay Academic Script.docx` in the same article folder. The main
+`.AI.docx` stays the Takeaway, Q&A, Summary, and on-camera Video Script only.
+
+The alternate script is for a lay college graduate: academic tone, formal
+wording, and the same job of summarising the article so it is interesting and
+relevant. No Interpreting Interpreter branding and no series format in the
+title or the narration. No sign-off. Default to exactly 10 rows (9–12 only if
+the user asks).
+
+Title: `# <Topic>: Lay Academic Script`. One opening sentence may name the
+author, the article, and the volume. No page numbers in that sentence.
+
+Table header:
+
+`| # | Narration (spoken) | On-screen caption | Image |`
+
+- **Narration (spoken)** is the only column with a pronunciation pass. Write
+  years, ordinals, and abbreviations as they are spoken (`eighteen thirty-five`,
+  `thirty-fourth`, `Doctor`). A tricky name or technical word gets a phonetic
+  respelling or IPA here only (`hieratic` spoken as `hy-er-AT-ik`). The caption
+  uses the normal spelling. One or two full sentences. Formal. No first person,
+  no “we”, no “and I'll see you next time.”
+- **On-screen caption** is a word-for-word transcript of that narration in
+  normal spelling. Break cards with ` / `. Each card is at most about 7 words
+  and at most 2 lines. A second line inside one card is ` // `. Break at a
+  clause boundary. Do not split a personal name. Do not end a line on a small
+  word (`a`, `an`, `the`, `of`, `to`, `and`, `or`, `but`, `in`, `on`, `for`,
+  `with`, `as`, `at`, `by`). No phonetic spelling in a caption.
+- **Image** describes a real sourced picture: Joseph Smith Papers, Wikimedia
+  Commons, Church History Library, or a screenshot or quote card from the
+  article. Name the file `NN - Short Desc.ext` when you know it. Do not describe
+  an AI-generated scene.
+- No page numbers anywhere in the title, the opening sentence, the narration,
+  the captions, or the image cues.
+- The last row points viewers to the article on the Interpreter Foundation
+  website. Speak it as `interpreter foundation dot org`. The caption uses
+  `interpreterfoundation.org`. Do not invent a deeper URL.
+- Never invent or overstate the author’s claims. If the article states a fact
+  inconsistently, leave that fact out.
+
+After the table, a Post Caption section and an Image Sources section:
+
+`Interpreting Interpreter: <Topic> By Kyler Rasmussen`
+
+That line is the only place the series name appears. Image Sources is one
+bullet per file: row, filename, where it came from, and a `Credit:` line.
+Credits may name the page a screenshot came from. The script itself may not.
+
 ## In-text references
 
 Whenever a claim, quotation, or specific piece of evidence in the Summary (or,
@@ -355,6 +406,7 @@ omissions. Never paraphrase inside the quote.
 
 ## What to omit
 
+- A Lay Academic script, a Post Caption, or Image Sources. Those belong in `<article> - Lay Academic Script.docx`, not in this post.
 - A Reflection section, a grade, or “what I find most compelling” in the written sections
 - The boilerplate “This post is a summary of the article…” paragraph
 - An invented URL on the author’s name. Use the placeholder `(link to author page)` in the Summary opening, and do not fill in an address.

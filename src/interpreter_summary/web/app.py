@@ -12,6 +12,7 @@ from starlette.requests import Request
 from interpreter_summary import __version__
 from interpreter_summary.config import get_settings
 from interpreter_summary.export import markdown_to_docx
+from interpreter_summary.lay_academic import lay_academic_docx_path, lay_academic_to_docx
 from interpreter_summary.grok import GrokError
 from interpreter_summary.pdf_utils import PdfError
 from interpreter_summary.service import summarize_pdf
@@ -113,7 +114,26 @@ async def api_summarize(
         "revision": result.revision,
         "checks_fixed": result.checks_fixed,
         "checks_open": result.checks_open,
+        "lay_markdown": result.lay_markdown,
+        "lay_filename": lay_academic_docx_path(pdf.filename or "article.pdf").name,
+        "lay_row_count": result.lay_row_count,
+        "lay_length_note": result.lay_length_note,
     }
+
+
+@app.post("/api/export/lay-docx")
+async def api_export_lay_docx(payload: dict) -> Response:
+    markdown_text = (payload or {}).get("markdown")
+    if not markdown_text:
+        raise HTTPException(status_code=400, detail="Missing markdown.")
+    requested = (payload or {}).get("filename") or "article.pdf"
+    filename = lay_academic_docx_path(str(requested)).name.replace('"', "")
+    data = lay_academic_to_docx(markdown_text)
+    return Response(
+        content=data,
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
 
 
 @app.post("/api/export/docx")

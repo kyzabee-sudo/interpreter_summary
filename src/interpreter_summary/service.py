@@ -14,11 +14,17 @@ from interpreter_summary.checks import (
 from interpreter_summary.config import Settings
 from interpreter_summary.export import parse_sections, strip_preamble, strip_reflection_section
 from interpreter_summary.grok import GrokClient, GrokError
+from interpreter_summary.lay_academic import (
+    extract_lay_script,
+    lay_script_length_note,
+    split_lay_academic,
+)
 from interpreter_summary.length import (
     closing_quote_length_note,
     closing_quote_text,
     count_words,
     extract_length_note,
+    lay_academic_length_hint,
     length_hint,
     qa_length_note,
     summary_length_note,
@@ -29,7 +35,12 @@ from interpreter_summary.length import (
 )
 from interpreter_summary.locators import LocatorReport, verify_locators
 from interpreter_summary.pdf_utils import PdfCorpus, extract_pdf_corpus, validate_pdf
-from interpreter_summary.prompts import build_user_prompt, default_system_prompt
+from interpreter_summary.prompts import (
+    LAY_ACADEMIC_SYSTEM_PROMPT,
+    build_lay_academic_user_prompt,
+    build_user_prompt,
+    default_system_prompt,
+)
 from interpreter_summary.quotes import QuoteReport, verify_quotes
 from interpreter_summary.review import (
     REVIEW_REASONING_EFFORT,
@@ -80,6 +91,9 @@ class SummaryResult:
     revision: str = ""
     checks_fixed: int = 0
     checks_open: int = 0
+    lay_markdown: str = ""
+    lay_row_count: int = 0
+    lay_length_note: str = ""
 
     def verify_summary_line(self) -> str:
         parts = [self.locator_report.summary_line()]
@@ -95,6 +109,8 @@ class SummaryResult:
                 f"check {self.checks_fixed} fixed, {self.checks_open} open",
             ]
         )
+        if self.lay_length_note:
+            parts.append(self.lay_length_note)
         return " · ".join(parts)
 
 
@@ -156,13 +172,18 @@ async def summarize_pdf(
 
 
 def _prepare_draft(markdown: str, corpus: PdfCorpus):
-    """Strip chatter, then repair locators and quotes and tidy the surface."""
+    """Strip chatter, then repair locators and quotes and tidy the surface.
+
+    A Lay Academic script appended to the post is removed here. It is returned
+    separately so it cannot enter the main ``.AI.docx``.
+    """
     markdown, length_justification = extract_length_note(markdown)
+    markdown, embedded_lay = split_lay_academic(markdown)
     drafted = strip_embedded_check_report(strip_preamble(strip_reflection_section(markdown)))
     locator_report = verify_locators(drafted, corpus)
     quote_report = verify_quotes(locator_report.markdown, corpus)
     tidied, tidy_notes = tidy_draft(quote_report.markdown)
-    return tidied, length_justification, locator_report, quote_report, tidy_notes
+    return tidied, length_justification, locator_report, quote_report, tidy_notes, embedded_lay
 
 
 async def _finish_draft(
@@ -175,7 +196,7 @@ async def _finish_draft(
 ) -> SummaryResult:
     # Pull the length explanation before preamble stripping, in case the model
     # parks the comment above the title. It must not remain in the post.
-    cleaned, length_justification, locator_report, quote_report, tidy_notes = _prepare_draft(
+    cleaned, length_justification, locator_report, quote_report, tidy_notes, embedded_lay = _prepare_draft(
         markdown, corpus
     )
     article_text, article_truncated = corpus.marked_text()
@@ -221,9 +242,11 @@ async def _finish_draft(
             if revised is not None:
                 if revised_justification:
                     length_justification = revised_justification
-                cleaned, _ignored, locator_report, quote_report, tidy_notes = _prepare_draft(
+                cleaned, _ignored, locator_report, quote_report, tidy_notes, revised_lay = _prepare_draft(
                     revised, corpus
                 )
+                if revised_lay:
+                    embedded_lay = revised_lay
                 audit = inspect_draft(
                     cleaned,
                     corpus,
@@ -257,6 +280,14 @@ async def _finish_draft(
             revision_status = "not needed"
             open_findings = [*open_findings, *model_findings]
 
+    lay_markdown, lay_note = await _draft_lay_script(
+        grok,
+        pagination=pagination,
+        article_text=article_text,
+        article_truncated=article_truncated,
+        draft=cleaned,
+        embedded_lay=embedded_lay,
+    )
     visible = [finding for finding in open_findings if finding.severity != "info"]
     check_report = render_check_report(
         corpus=corpus,
@@ -313,7 +344,46 @@ async def _finish_draft(
         revision=revision_status,
         checks_fixed=len(_dedupe(fixed_notes)),
         checks_open=len(visible),
+        lay_markdown=lay_markdown,
+        lay_row_count=video_row_count(lay_markdown) if lay_markdown else 0,
+        lay_length_note=lay_note,
     )
+
+
+async def _draft_lay_script(
+    grok: GrokClient,
+    *,
+    pagination: str,
+    article_text: str,
+    article_truncated: bool,
+    draft: str,
+    embedded_lay: str,
+) -> tuple[str, str]:
+    """One text-only call. The PDF is not attached. Failure keeps the summary."""
+    try:
+        raw = await grok.complete_text(
+            system_prompt=LAY_ACADEMIC_SYSTEM_PROMPT,
+            user_prompt=build_lay_academic_user_prompt(
+                pagination=pagination,
+                article_text=article_text,
+                article_truncated=article_truncated,
+                draft=draft,
+                length_hint_text=lay_academic_length_hint(),
+            ),
+            reasoning_effort=REVIEW_REASONING_EFFORT,
+        )
+    except GrokError as exc:
+        fallback = extract_lay_script(embedded_lay)
+        if fallback:
+            return fallback, lay_script_length_note(fallback) + "; recovered from the main draft"
+        return "", f"lay script failed ({_short_error(exc)})"
+    script = extract_lay_script(raw)
+    if script:
+        return script, lay_script_length_note(script)
+    fallback = extract_lay_script(embedded_lay)
+    if fallback:
+        return fallback, lay_script_length_note(fallback) + "; recovered from the main draft"
+    return "", "lay script omitted (the response was not a Lay Academic script)"
 
 
 async def _review_draft(

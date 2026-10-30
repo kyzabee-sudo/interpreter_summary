@@ -39,6 +39,11 @@ _WORD_BANDS: tuple[tuple[int, int, int, int, str], ...] = (
 TAKEAWAY_LOW, TAKEAWAY_HIGH, TAKEAWAY_SOFT = 20, 35, 45
 QA_ANSWER_LOW, QA_ANSWER_HIGH, QA_ANSWER_SOFT = 35, 70, 90
 QUOTE_LOW, QUOTE_HIGH, QUOTE_SOFT = 60, 125, 140
+# The Lay Academic script is a separate document. These limits do not apply
+# to the on-camera Video Script table in the main post.
+LAY_ROW_LOW, LAY_ROW_HIGH = 9, 12
+LAY_CAPTION_WORDS = 7
+LAY_CAPTION_LINES = 2
 
 
 @dataclass(frozen=True)
@@ -307,7 +312,16 @@ def length_hint(
         "Row 1 is a vivid scene; row 2 contrasts it with today. "
         "Each narration is one or two full spoken sentences (about 20–45 words). "
         'The last row ends with "and I\'ll see you next time." '
-        "Do not write a Reflection. Output only the post, with no preamble."
+        "Do not write a Reflection. Output only the post, with no preamble. "
+        "Do not append a Lay Academic script to this post. That script is a separate "
+        "document, not this table. It also defaults to exactly 10 rows "
+        f"(acceptable {LAY_ROW_LOW}–{LAY_ROW_HIGH}), in an academic tone for lay "
+        "college graduates, with no Interpreting Interpreter branding and no sign-off. "
+        "Its narration is written as spoken: years, ordinals, abbreviations, and a "
+        "phonetic or IPA spelling for a tricky name. Its captions are a word-for-word "
+        f"transcript in normal spelling, at most about {LAY_CAPTION_WORDS} words on "
+        f"{LAY_CAPTION_LINES} lines, broken at a clause boundary. The script has no "
+        "page numbers. The last row points viewers to the article at interpreterfoundation.org."
     )
 
 
@@ -388,3 +402,36 @@ def video_length_note(rows: int) -> str:
     else:
         status = "long"
     return f"video {rows} rows ({status}; target about 10)"
+
+
+def lay_academic_length_hint() -> str:
+    """Length rules for the separate Lay Academic script, not the on-camera table."""
+    return (
+        "Lay Academic script: exactly 10 rows unless the user asks otherwise "
+        f"(acceptable {LAY_ROW_LOW}–{LAY_ROW_HIGH}). "
+        "Columns: #, Narration (spoken), On-screen caption, Image. "
+        "Each narration is one or two formal sentences, written as spoken. "
+        f"Each caption card is at most about {LAY_CAPTION_WORDS} words and at most "
+        f"{LAY_CAPTION_LINES} lines. Separate cards with ' / ' and a second line "
+        "inside one card with ' // '. Break at a clause boundary. Do not end a line "
+        "on a small word, and do not split a name. "
+        "No page numbers in the title, narration, captions, or image cues. "
+        "The last narration points to interpreterfoundation.org, spoken as "
+        "'interpreter foundation dot org', and it does not sign off."
+    )
+
+
+def lay_academic_length_note(rows: int, notes: list[str] | None = None) -> str:
+    if LAY_ROW_LOW <= rows <= LAY_ROW_HIGH:
+        status = "on target"
+    elif rows < LAY_ROW_LOW:
+        status = "short"
+    else:
+        status = "long"
+    base = (
+        f"lay script {rows} rows ({status}; target 10, "
+        f"acceptable {LAY_ROW_LOW}–{LAY_ROW_HIGH})"
+    )
+    if notes:
+        base += "; " + "; ".join(notes[:6])
+    return base

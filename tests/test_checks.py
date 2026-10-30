@@ -333,6 +333,14 @@ def _handler(routes: dict[str, str]):
     return respond
 
 
+def _system_text(payload: dict) -> str:
+    for item in payload.get("input") or []:
+        if item.get("role") == "system":
+            content = item.get("content") or ""
+            return content if isinstance(content, str) else ""
+    return ""
+
+
 def _file_attached(payload: dict) -> bool:
     for item in payload.get("input") or []:
         content = item.get("content")
@@ -379,13 +387,17 @@ async def test_pipeline_revises_once_without_reattaching_the_pdf(tmp_path):
             client=client,
         )
     seen = routes["seen"]
-    assert len(seen) == 3
+    assert len(seen) == 4
     assert _file_attached(seen[0])
     assert "reasoning" not in seen[0]
     assert not _file_attached(seen[1])
     assert not _file_attached(seen[2])
+    assert not _file_attached(seen[3])
     assert seen[1]["reasoning"] == {"effort": "low"}
     assert seen[2]["reasoning"] == {"effort": "low"}
+    assert seen[3]["reasoning"] == {"effort": "low"}
+    assert "Output only the Lay Academic script" in _system_text(seen[3])
+    assert "Lay Academic" not in result.markdown
     assert "doesn't appear to be repeated" not in result.markdown
     assert "Check report" not in result.markdown
     assert "may extend through the rest of 1 Nephi and possibly beyond" in result.check_report
@@ -472,7 +484,12 @@ As Smith concludes (link to "may extend through the rest"; page 155):
             client=client,
             model_verify=False,
         )
-    assert len(seen) == 1
+    assert len(seen) == 2
+    assert _file_attached(seen[0])
+    assert not _file_attached(seen[1])
+    assert seen[1]["reasoning"] == {"effort": "low"}
+    assert "Output only the Lay Academic script" in _system_text(seen[1])
+    assert "Lay Academic" not in result.markdown
     assert "page 156" not in result.markdown
     assert 'page 155' in result.markdown
     assert "skipped (--no-verify)" in result.check_report
@@ -546,5 +563,6 @@ def test_cli_writes_the_check_report_beside_the_draft_and_not_in_the_docx(tmp_pa
     blob = "\n".join(paragraph.text for paragraph in document.paragraphs)
     assert "Check report" not in blob
     assert "Nothing unresolved" not in blob
+    assert not (tmp_path / "summary - Lay Academic Script.docx").exists()
     stderr = capsys.readouterr().err
     assert "# Check report" in stderr
