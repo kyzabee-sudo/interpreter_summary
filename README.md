@@ -47,8 +47,9 @@ wording, ten rows by default. It does not use Interpreting Interpreter branding
 or the on-camera sign-off. The title is the topic plus `: Lay Academic Script`.
 The table has four columns: `#`, `Narration (spoken)`, `On-screen caption`,
 and `Image`. A **Post Caption** section reads
-`Interpreting Interpreter: [Title] By Kyler Rasmussen`. An **Image Sources**
-section lists each file and its credit.
+`Interpreting Interpreter: [Title]`, with no author. An **Image Sources**
+section lists each file and its credit. The post caption, any end card, and
+those credits do not include an author line.
 
 Narration is written as spoken (years, ordinals, abbreviations, and a phonetic
 or IPA spelling for a tricky name). Captions are a word-for-word transcript in

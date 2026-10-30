@@ -178,8 +178,9 @@ inconsistently, leave that fact out. The Image column names a real sourced \
 image (Joseph Smith Papers, Wikimedia Commons, Church History Library, or a \
 screenshot or quote card from the article), not an AI-generated scene. The \
 Post Caption line is the only place the series name appears: \
-"Interpreting Interpreter: [Title] By Kyler Rasmussen". Image Sources list \
-each file, where it came from, and a credit.
+"Interpreting Interpreter: [Title]". That caption has no author. An end card \
+and the credits have no author line and do not say "By Kyler Rasmussen". \
+Image Sources list each file, where it came from, and a credit.
 """
 
 
@@ -290,17 +291,20 @@ After the table:
 
 ## Post Caption
 
-Interpreting Interpreter: <Topic> By Kyler Rasmussen
+Interpreting Interpreter: <Topic>
 
 The topic is the script title without the ": Lay Academic Script" suffix. \
-This is the only place the series name appears.
+This is the only place the series name appears. Do not add an author, a \
+byline, or "By Kyler Rasmussen". An end card and every credit line have no \
+author line. Do not name Kyler Rasmussen in this script.
 
 ## Image Sources
 
 One bullet per file: the row, the filename `NN - Short Desc.ext`, where it \
 came from (URL or "article screenshot"), and a credit. Start the credit with \
 "Credit:". Use Joseph Smith Papers / Church History Library, Wikimedia Commons, \
-or the article citation. Do not credit an AI image generator.
+or the article citation. Do not credit an AI image generator, and do not add \
+an author line.
 
 Shape to copy. A real script numbers every row from 1 through 10. The \
 miniature below skips rows 2–9 and exists only to show the markup:
@@ -318,7 +322,7 @@ Alternate script for A. Sample Scholar, "Copper, Covenants, and the Case of the 
 
 ## Post Caption
 
-Interpreting Interpreter: Copper Tokens By Kyler Rasmussen
+Interpreting Interpreter: Copper Tokens
 
 ## Image Sources
 
@@ -346,7 +350,9 @@ def build_lay_academic_user_prompt(
         "Start with the markdown title. The article is the source of truth. "
         "The draft below is a briefing you may use for scope, not a voice to copy. "
         "Do not copy its sign-off, its first person, or its on-camera table. "
-        "Do not invent or overstate claims. Leave out a fact the article states inconsistently.\n\n"
+        "Do not invent or overstate claims. Leave out a fact the article states inconsistently. "
+        "The post caption is Interpreting Interpreter: [Title], with no author. "
+        "An end card and the credits have no author line. Do not name Kyler Rasmussen.\n\n"
         f"Length:\n{length_hint_text}\n\n"
         f"Printed pagination (for your reading only; do not put page numbers in the script):\n"
         f"{pagination}\n\n"

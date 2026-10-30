@@ -365,11 +365,13 @@ Table header:
 
 After the table, a Post Caption section and an Image Sources section:
 
-`Interpreting Interpreter: <Topic> By Kyler Rasmussen`
+`Interpreting Interpreter: <Topic>`
 
-That line is the only place the series name appears. Image Sources is one
-bullet per file: row, filename, where it came from, and a `Credit:` line.
-Credits may name the page a screenshot came from. The script itself may not.
+That line is the only place the series name appears. It names no author.
+An end card and the credit text have no author line and do not say “By Kyler
+Rasmussen”. Image Sources is one bullet per file: row, filename, where it came
+from, and a `Credit:` line. Credits may name the page a screenshot came from.
+The script itself may not.
 
 ## In-text references
 

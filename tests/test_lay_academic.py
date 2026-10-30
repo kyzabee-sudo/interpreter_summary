@@ -1,6 +1,7 @@
 import json
 import zipfile
 from io import BytesIO
+from pathlib import Path
 from xml.etree import ElementTree as ET
 
 import httpx
@@ -19,9 +20,15 @@ from interpreter_summary.lay_academic import (
     lay_academic_to_docx,
     lay_script_notes,
     split_lay_academic,
+    strip_lay_author_credit,
 )
 from interpreter_summary.length import lay_academic_length_hint, length_hint
-from interpreter_summary.prompts import LAY_ACADEMIC_SYSTEM_PROMPT, SYSTEM_PROMPT, build_user_prompt
+from interpreter_summary.prompts import (
+    LAY_ACADEMIC_SYSTEM_PROMPT,
+    SYSTEM_PROMPT,
+    build_lay_academic_user_prompt,
+    build_user_prompt,
+)
 from interpreter_summary.samples import SAMPLE_SUMMARY_MARKDOWN, write_sample_pdf
 from interpreter_summary.service import summarize_pdf
 from interpreter_summary.style import load_style_text
@@ -52,7 +59,7 @@ Alternate script for A. Sample Scholar, “Copper, Covenants, and the Case of th
 
 ## Post Caption
 
-Interpreting Interpreter: Copper Tokens By Kyler Rasmussen
+Interpreting Interpreter: Copper Tokens
 
 ## Image Sources
 
@@ -85,6 +92,33 @@ def test_prompts_and_style_guide_describe_the_lay_script():
     assert " // " in LAY_ACADEMIC_SYSTEM_PROMPT
     assert "credit" in guide.lower()
     assert "NN - Short Desc" in LAY_ACADEMIC_SYSTEM_PROMPT
+    assert "You are Kyler Rasmussen" in SYSTEM_PROMPT
+    assert "Interpreting Interpreter: [Title] By Kyler Rasmussen" not in SYSTEM_PROMPT
+    assert "Interpreting Interpreter: <Topic> By Kyler Rasmussen" not in LAY_ACADEMIC_SYSTEM_PROMPT
+    assert "Interpreting Interpreter: Copper Tokens By Kyler Rasmussen" not in LAY_ACADEMIC_SYSTEM_PROMPT
+    assert "Interpreting Interpreter: <Topic>" in LAY_ACADEMIC_SYSTEM_PROMPT
+    assert "no author" in LAY_ACADEMIC_SYSTEM_PROMPT.lower()
+    assert "author line" in LAY_ACADEMIC_SYSTEM_PROMPT.lower()
+    lay_guide = guide.split("## Lay Academic script", 1)[1].split("## In-text references", 1)[0]
+    assert "`Interpreting Interpreter: <Topic>`" in lay_guide
+    assert "By Kyler Rasmussen`" not in lay_guide
+    assert "no author" in lay_guide.lower()
+    assert "Write as **Kyler Rasmussen**" in guide
+    assert "no author" in lay_academic_length_hint().lower()
+    lay_user = build_lay_academic_user_prompt(
+        pagination="page 1",
+        article_text="Article text.",
+        article_truncated=False,
+        draft="Draft.",
+        length_hint_text="exactly 10 rows",
+    )
+    assert "no author" in lay_user.lower()
+    assert "By Kyler Rasmussen" not in lay_user
+    readme = Path(__file__).resolve().parents[1].joinpath("README.md").read_text(encoding="utf-8")
+    lay_readme = readme.split("## Lay Academic script", 1)[1].split("### Video Images", 1)[0]
+    assert "Interpreting Interpreter: [Title]" in lay_readme
+    assert "By Kyler Rasmussen" not in lay_readme
+    assert "no author" in lay_readme.lower()
     user = build_user_prompt("House style.")
     assert "Do not append a Lay Academic script" in user
     assert "Do not include a video script" not in user
@@ -155,8 +189,11 @@ def test_lay_docx_matches_the_four_column_layout():
         for paragraph in document.paragraphs
         if paragraph.text.startswith("Interpreting Interpreter: Copper Tokens")
     )
-    assert caption == "Interpreting Interpreter: Copper Tokens By Kyler Rasmussen"
-    assert document.core_properties.author == "Kyler Rasmussen"
+    assert caption == "Interpreting Interpreter: Copper Tokens"
+    assert "Kyler Rasmussen" not in caption
+    assert "By Kyler" not in "\n".join(paragraph.text for paragraph in document.paragraphs)
+    assert document.core_properties.author != "Kyler Rasmussen"
+    assert b"Kyler Rasmussen" not in data
     assert len(document.tables) == 1
     table = document.tables[0]
     assert [cell.text for cell in table.rows[0].cells] == [
@@ -202,9 +239,48 @@ def test_main_ai_docx_stays_summary_only():
     assert "Post Caption" not in blob
     assert "Image Sources" not in blob
     assert "see you next time" in main_doc.tables[0].rows[-1].cells[1].text
+    assert main_doc.paragraphs[0].text.lstrip().startswith("Interpreting Interpreter: Tokens, Not Tonnage")
+    assert main_doc.core_properties.author == "Kyler Rasmussen"
     direct = Document(BytesIO(markdown_to_docx(SAMPLE_SUMMARY_MARKDOWN)))
     assert [cell.text for cell in direct.tables[0].rows[0].cells] == ["#", "Text", "Image"]
     assert len(direct.tables[0].rows) == 11
+    assert direct.core_properties.author == "Kyler Rasmussen"
+    assert direct.paragraphs[0].text.lstrip().startswith("Interpreting Interpreter: Tokens, Not Tonnage")
+
+
+def test_lay_output_omits_an_author_credit():
+    credited = LAY_SAMPLE.replace(
+        "Interpreting Interpreter: Copper Tokens",
+        "Interpreting Interpreter: Copper Tokens By Kyler Rasmussen",
+    )
+    credited = credited.replace(
+        "## Image Sources\n",
+        "## End card\n\nInterpreting Interpreter: Copper Tokens\n\nBy Kyler Rasmussen\n\n"
+        "Author: Kyler Rasmussen\n\n"
+        "## Image Sources\n"
+        "- Credit: Kyler Rasmussen\n",
+    )
+    cleaned = strip_lay_author_credit(credited)
+    assert cleaned == extract_lay_script("Here is the script.\n\n" + credited)
+    assert "Kyler Rasmussen" not in cleaned
+    assert "Interpreting Interpreter: Copper Tokens" in cleaned
+    assert "Credit: Wikimedia Commons" in cleaned
+    assert "the author’s hedge" in cleaned
+    main, lay = split_lay_academic(SAMPLE_SUMMARY_MARKDOWN.rstrip() + "\n\n" + credited)
+    assert "Kyler Rasmussen" not in lay
+    assert "By Kyler Rasmussen" not in main
+    assert main.startswith("# Interpreting Interpreter: Tokens, Not Tonnage")
+    data = lay_academic_to_docx(credited)
+    document = Document(BytesIO(data))
+    blob = "\n".join(paragraph.text for paragraph in document.paragraphs)
+    assert "Kyler Rasmussen" not in blob
+    assert "Interpreting Interpreter: Copper Tokens" in blob
+    assert document.core_properties.author != "Kyler Rasmussen"
+    assert b"Kyler Rasmussen" not in data
+    summary = Document(BytesIO(markdown_to_docx(SAMPLE_SUMMARY_MARKDOWN)))
+    assert summary.core_properties.author == "Kyler Rasmussen"
+    assert summary.paragraphs[0].text.lstrip().startswith("Interpreting Interpreter: Tokens, Not Tonnage")
+    assert [cell.text for cell in summary.tables[0].rows[0].cells] == ["#", "Text", "Image"]
 
 
 def _assert_theme_and_no_page_field(data: bytes) -> None:
