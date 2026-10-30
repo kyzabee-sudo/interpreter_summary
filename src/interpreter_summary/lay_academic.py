@@ -64,6 +64,19 @@ _SERIES_RE = re.compile(r"Interpreting\s+Interpreter", re.IGNORECASE)
 _CARD_SPLIT_RE = re.compile(r"\s+/\s+")
 _NAME_SPLIT_RE = re.compile(r"\b[A-Z][a-z]+\s+/\s+[A-Z]")
 _WORD_RE = re.compile(r"[A-Za-z0-9'’]+")
+# A Kyler Rasmussen byline is an author credit. The article's own author stays.
+_BYLINE_RE = re.compile(
+    r"(?i)(?:\s*[,;:\-—–]\s*|\s+)by\s+Kyler\s+Rasmussen\b\.?"
+)
+_AUTHOR_LINE_RE = re.compile(
+    r"(?ix)"
+    r"^[ \t]*(?:[-*][ \t]+)?"
+    r"(?:(?:end[ \t-]*card|credit|author|byline|written|scripted|narrated|posted|created)"
+    r"[ \t]*[:\-—–.][ \t]*)?"
+    r"(?:by[ \t]+)?"
+    r"Kyler[ \t]+Rasmussen"
+    r"\.?[ \t]*$"
+)
 
 
 def lay_academic_docx_path(article: str | Path) -> Path:
@@ -101,7 +114,8 @@ def split_lay_academic(markdown: str) -> tuple[str, str]:
         return text, ""
     main = text[: match.start()].strip()
     lay = text[match.start() :].strip()
-    return (f"{main}\n" if main else ""), (f"{lay}\n" if lay else "")
+    lay = strip_lay_author_credit(lay) if lay else ""
+    return (f"{main}\n" if main else ""), lay
 
 
 def extract_lay_script(raw: str) -> str:
@@ -113,7 +127,7 @@ def extract_lay_script(raw: str) -> str:
         text = text[match.start() :].strip()
     if not looks_like_lay_script(text):
         return ""
-    return f"{text}\n"
+    return strip_lay_author_credit(text)
 
 
 def lay_script_notes(markdown: str) -> list[str]:
@@ -147,19 +161,43 @@ def lay_script_length_note(markdown: str) -> str:
     return lay_academic_length_note(video_row_count(markdown), lay_script_notes(markdown))
 
 
+def strip_lay_author_credit(markdown: str) -> str:
+    """Remove a Kyler Rasmussen author credit from a lay script.
+
+    The post caption stays ``Interpreting Interpreter: [Title]``. A standalone
+    author line on an end card or in the credits is dropped. The article
+    author's name is left alone.
+    """
+    kept: list[str] = []
+    for line in markdown.replace("\r\n", "\n").split("\n"):
+        if _AUTHOR_LINE_RE.match(line):
+            continue
+        cleaned = _BYLINE_RE.sub("", line)
+        if cleaned != line:
+            cleaned = cleaned.rstrip()
+        if cleaned != line and not cleaned.strip():
+            continue
+        kept.append(cleaned)
+    text = re.sub(r"\n{3,}", "\n\n", "\n".join(kept)).strip()
+    return f"{text}\n" if text else ""
+
+
 def lay_academic_to_docx(markdown: str) -> bytes:
     """Write the Lay Academic script with Kyler's template formatting.
 
     Same theme font, same unbolded bracketed labels, and the same red locator
     colour when a locator is actually present. The title is not given the
     series italic. Caption cards become line breaks. The document has no page
-    number field.
+    number field and does not name a script author.
     """
     from io import BytesIO
 
+    markdown = strip_lay_author_credit(markdown)
     document = _document_from_template()
     _apply_page_setup(document)
-    document.core_properties.author = "Kyler Rasmussen"
+    # The template names Kyler as creator. This file must not.
+    document.core_properties.author = ""
+    document.core_properties.last_modified_by = ""
 
     lines = markdown.replace("\r\n", "\n").split("\n")
     index = 0

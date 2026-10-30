@@ -417,7 +417,9 @@ def lay_academic_length_hint() -> str:
         "on a small word, and do not split a name. "
         "No page numbers in the title, narration, captions, or image cues. "
         "The last narration points to interpreterfoundation.org, spoken as "
-        "'interpreter foundation dot org', and it does not sign off."
+        "'interpreter foundation dot org', and it does not sign off. "
+        "The post caption is Interpreting Interpreter: [Title], with no author. "
+        "An end card and the credits have no author line."
     )
 
 
